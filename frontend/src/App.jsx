@@ -12,6 +12,7 @@ import SourceDumpPage from './pages/features/SourceDumpPage.jsx';
 import AiHelperPage from './pages/features/AiHelperPage.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import UpgradePage from './pages/UpgradePage.jsx';
+import UpgradeStatusPage from './pages/UpgradeStatusPage.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 
 const App = () => {
@@ -33,6 +34,8 @@ const App = () => {
             <Route path="source-dump" element={<SourceDumpPage />} />
             <Route path="ai-helper" element={<AiHelperPage />} />
             <Route path="upgrade" element={<UpgradePage />} />
+            <Route path="upgrade/success" element={<UpgradeStatusPage status="success" />} />
+            <Route path="upgrade/cancel" element={<UpgradeStatusPage status="cancel" />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
