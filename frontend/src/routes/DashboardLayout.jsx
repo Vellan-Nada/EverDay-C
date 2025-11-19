@@ -9,12 +9,12 @@ import PlanBadge from '../components/PlanBadge.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { fetchFeatures } from '../api/featureApi.js';
-import { createCheckoutSession } from '../api/billingApi.js';
+import { createBillingPortalSession, createCheckoutSession } from '../api/billingApi.js';
 import layoutStyles from '../styles/DashboardLayout.module.css';
 
 const DashboardLayout = () => {
   const navigate = useNavigate();
-  const { user, token, signOut, authLoading, isPro } = useAuth();
+  const { user, token, signOut, authLoading, isPro, planTier } = useAuth();
   const [features, setFeatures] = useState([]);
   const [featureError, setFeatureError] = useState(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -51,6 +51,20 @@ const DashboardLayout = () => {
     navigate('/upgrade');
   };
 
+  const handleManageSubscription = async () => {
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    try {
+      const { url } = await createBillingPortalSession(token);
+      window.location.href = url;
+    } catch (err) {
+      console.error('Billing portal failed', err);
+      setToast(err.message || 'Unable to open billing portal');
+    }
+  };
+
   const handleFeedback = () => {
     setFeedbackOpen(true);
   };
@@ -58,7 +72,7 @@ const DashboardLayout = () => {
   return (
     <>
       <div className={layoutStyles.appShell}>
-        <Sidebar onUpgradeClick={handleUpgradeClick} />
+        <Sidebar onUpgradeClick={handleUpgradeClick} onManageSubscription={handleManageSubscription} />
         <main className={layoutStyles.contentArea}>
           <div className={layoutStyles.panel}>
             <div className={layoutStyles.topBar}>
@@ -72,19 +86,26 @@ const DashboardLayout = () => {
                 <PlanBadge />
                 <DonationButton onDonate={handleDonate} />
                 <FeedbackButton onFeedback={handleFeedback} />
-                <button
-                  type="button"
-                  className={layoutStyles.secondaryButton}
-                  onClick={handleUpgradeClick}
-                  disabled={isPro}
-                  style={isPro ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
-                >
-                  {isPro ? 'Pro active' : 'Upgrade'}
-                </button>
-                {user ? (
-                  <button type="button" className={layoutStyles.secondaryButton} onClick={signOut}>
-                    Log out
+                {planTier !== 'pro' && (
+                  <button
+                    type="button"
+                    className={layoutStyles.secondaryButton}
+                    onClick={handleUpgradeClick}
+                  >
+                    {planTier === 'plus' ? 'Go Pro' : 'See plans'}
                   </button>
+                )}
+                {user ? (
+                  <>
+                    {planTier !== 'free' && (
+                      <button type="button" className={layoutStyles.secondaryButton} onClick={handleManageSubscription}>
+                        Manage subscription
+                      </button>
+                    )}
+                    <button type="button" className={layoutStyles.secondaryButton} onClick={signOut}>
+                      Log out
+                    </button>
+                  </>
                 ) : (
                   <button type="button" className={layoutStyles.secondaryButton} onClick={() => navigate('/login')}>
                     Log in

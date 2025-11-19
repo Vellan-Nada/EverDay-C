@@ -19,7 +19,9 @@ const examplePrompts = [
 ];
 
 const AiHelperPage = () => {
-  const { token, user, isPro } = useAuth();
+  const { token, user, planTier } = useAuth();
+  const isPro = planTier === 'pro';
+  const canUseAi = Boolean(user && token && isPro);
   const [messages, setMessages] = useState(starterMessages);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,13 +34,17 @@ const AiHelperPage = () => {
 
   const sendPrompt = async (prompt) => {
     if (!prompt.trim()) return;
+    if (!canUseAi) {
+      setError('EverDay Pro is required to use the AI helper.');
+      return;
+    }
     const userMessage = { role: 'user', content: prompt.trim(), id: `user-${Date.now()}` };
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setError(null);
     try {
       setLoading(true);
-      const { reply } = await sendAiPrompt(prompt.trim(), token, isPro ? null : 'User on free plan');
+      const { reply } = await sendAiPrompt(prompt.trim(), token);
       setMessages((prev) => [...prev, { role: 'assistant', content: reply, id: `ai-${Date.now()}` }]);
     } catch (err) {
       console.error('AI helper error', err);
@@ -70,7 +76,7 @@ const AiHelperPage = () => {
       )}
       {!isPro && (
         <div className="info-toast" style={{ background: 'rgba(249, 115, 22, 0.15)', color: '#b45309' }}>
-          Pro users get faster responses and the ability to save conversations.
+          EverDay Pro unlocks the AI helper. Upgrade to Pro to access this space.
         </div>
       )}
       <div className={styles.messageList}>
@@ -90,9 +96,10 @@ const AiHelperPage = () => {
           value={input}
           onChange={(event) => setInput(event.target.value)}
           placeholder="Ask EverDay AI anything about productivity, habits, or learning..."
+          disabled={!canUseAi}
         />
         <div className={styles.composerActions}>
-          <button type="submit" className={styles.primary} disabled={loading}>
+          <button type="submit" className={styles.primary} disabled={loading || !canUseAi}>
             {loading ? 'Sending…' : 'Ask AI'}
           </button>
           <button type="button" className={styles.ghost} disabled={loading} onClick={() => setInput('')}>
@@ -102,12 +109,7 @@ const AiHelperPage = () => {
         </div>
         <div className={styles.examples}>
           {examplePrompts.map((prompt) => (
-            <button
-              key={prompt}
-              type="button"
-              onClick={() => handleExample(prompt)}
-              disabled={loading}
-            >
+            <button key={prompt} type="button" onClick={() => handleExample(prompt)} disabled={loading || !canUseAi}>
               {prompt}
             </button>
           ))}

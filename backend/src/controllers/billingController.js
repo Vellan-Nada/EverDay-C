@@ -22,7 +22,11 @@ const upsertSubscription = async ({ id, status, current_period_end, metadata, it
     return;
   }
 
-  const plan = items?.data?.[0]?.price?.lookup_key || 'pro';
+  const plan =
+    metadata?.tier ||
+    items?.data?.[0]?.price?.lookup_key ||
+    items?.data?.[0]?.price?.nickname ||
+    'pro';
   const expiresAtDate = new Date(current_period_end * 1000);
   const expiresAt = expiresAtDate.toISOString();
   const isWithinPaidPeriod = expiresAtDate.getTime() > Date.now();
@@ -62,7 +66,7 @@ const upsertSubscription = async ({ id, status, current_period_end, metadata, it
   }
 };
 
-const recordPayment = async ({ userId, sessionId, amountTotal, currency, type, status }) => {
+const recordPayment = async ({ userId, sessionId, amountTotal, currency, type, status, tier }) => {
   if (!userId) return;
   await supabaseAdmin.from('payments').insert({
     user_id: userId,
@@ -71,19 +75,32 @@ const recordPayment = async ({ userId, sessionId, amountTotal, currency, type, s
     currency,
     type,
     status,
+    tier,
   });
 };
 
 export const createCheckoutSession = async (req, res) => {
   try {
-    const { mode = 'subscription' } = req.body;
-
-    if (mode === 'subscription' && req.profile?.plan === 'pro') {
-      return res.status(400).json({ error: 'You already have an active Pro plan.' });
-    }
+    const { mode = 'subscription', tier = 'plus' } = req.body;
 
     const isDonation = mode === 'donation';
-    const priceId = isDonation ? env.stripeDonationPrice : env.stripePricePro;
+    const normalizedTier = tier === 'pro' ? 'pro' : 'plus';
+
+    if (mode === 'subscription') {
+      if (normalizedTier === 'pro' && req.profile?.plan === 'pro') {
+        return res.status(400).json({ error: 'You already have an active Pro plan.' });
+      }
+      if (normalizedTier === 'plus' && ['plus', 'pro'].includes(req.profile?.plan)) {
+        return res.status(400).json({ error: 'You already have an active subscription.' });
+      }
+    }
+
+    const priceId = isDonation
+      ? env.stripeDonationPrice
+      : normalizedTier === 'pro'
+      ? env.stripePricePro
+      : env.stripePricePlus;
+
     const session = await stripe.checkout.sessions.create({
       mode: isDonation ? 'payment' : 'subscription',
       payment_method_types: ['card'],
@@ -94,12 +111,14 @@ export const createCheckoutSession = async (req, res) => {
       metadata: {
         userId: req.userId,
         type: isDonation ? 'donation' : 'subscription',
+        tier: isDonation ? undefined : normalizedTier,
       },
       subscription_data: isDonation
         ? undefined
         : {
             metadata: {
               userId: req.userId,
+              tier: normalizedTier,
             },
           },
     });
@@ -129,6 +148,7 @@ export const handleStripeWebhook = async (req, res) => {
           currency: session.currency,
           type: session.metadata?.type || session.mode,
           status: session.payment_status,
+          tier: session.metadata?.tier,
         });
         break;
       }

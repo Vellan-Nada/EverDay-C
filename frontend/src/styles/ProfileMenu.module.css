@@ -1,0 +1,129 @@
+.profileContainer {
+  margin-top: auto;
+  position: relative;
+}
+
+.profileTrigger {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 0.65rem 0.9rem;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-align: left;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profileDetails {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+}
+
+.profileDetails span {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.caret {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.dropdown {
+  position: absolute;
+  bottom: calc(100% + 0.6rem);
+  left: 0;
+  right: 0;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.15);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 40;
+}
+
+.dropdownHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dropdownHeader p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.planPill {
+  align-self: flex-start;
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.75rem;
+  background: rgba(148, 163, 184, 0.2);
+  color: var(--text-muted);
+}
+
+.dropdownActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.dropdownActions button {
+  border: 1px solid var(--border);
+  border-radius: 0.8rem;
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  background: #fff;
+}
+
+.logoutButton {
+  border: 1px solid rgba(248, 113, 113, 0.6);
+  border-radius: 0.9rem;
+  padding: 0.55rem;
+  background: rgba(248, 113, 113, 0.15);
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.guestBox {
+  margin-top: auto;
+  border: 1px dashed var(--border);
+  border-radius: 1rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.guestBox button {
+  border-radius: 0.85rem;
+  padding: 0.55rem;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.secondaryButton {
+  background: #fff;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}

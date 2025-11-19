@@ -1,5 +1,7 @@
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth.js';
 import styles from '../styles/Sidebar.module.css';
+import ProfileMenu from './ProfileMenu.jsx';
 
 const navItems = [
   { label: 'Habit Tracker', path: '/habits' },
@@ -13,7 +15,16 @@ const navItems = [
   { label: 'AI Helper', path: '/ai-helper' },
 ];
 
-const Sidebar = ({ onUpgradeClick = () => {} }) => {
+const Sidebar = ({ onUpgradeClick = () => {}, onManageSubscription = () => {} }) => {
+  const { planTier } = useAuth();
+  const showUpgradeCta = planTier !== 'pro';
+  const ctaTitle = planTier === 'plus' ? 'Ready for AI superpowers?' : 'Unlock EverDay Pro';
+  const ctaDescription =
+    planTier === 'plus'
+      ? 'Upgrade to Pro for AI helper access and saved threads.'
+      : 'Get AI helper boosts, deep insights, and data backups.';
+  const ctaButton = planTier === 'plus' ? 'Go Pro' : 'See plans';
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.brand}>
@@ -38,13 +49,17 @@ const Sidebar = ({ onUpgradeClick = () => {} }) => {
         </nav>
       </div>
 
-      <div className={styles.ctaCard}>
-        <strong>Unlock EverDay Pro</strong>
-        <p>Get AI helper boosts, deep insights, and data backups.</p>
-        <button type="button" onClick={onUpgradeClick}>
-          See plans
-        </button>
-      </div>
+      {showUpgradeCta && (
+        <div className={styles.ctaCard}>
+          <strong>{ctaTitle}</strong>
+          <p>{ctaDescription}</p>
+          <button type="button" onClick={onUpgradeClick}>
+            {ctaButton}
+          </button>
+        </div>
+      )}
+
+      <ProfileMenu onUpgradeClick={onUpgradeClick} onManageSubscription={onManageSubscription} />
     </aside>
   );
 };

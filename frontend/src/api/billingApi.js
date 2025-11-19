@@ -1,9 +1,9 @@
 import { apiRequest } from './client.js';
 
-export const createCheckoutSession = (mode = 'subscription', token) =>
+export const createCheckoutSession = (mode = 'subscription', token, tier) =>
   apiRequest('/billing/checkout', {
     method: 'POST',
-    body: { mode },
+    body: { mode, tier },
     token,
   });
 

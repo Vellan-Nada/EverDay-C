@@ -111,7 +111,10 @@ export const AuthProvider = ({ children }) => {
 
   const plan = profile?.plan || 'free';
   const planExpiresAt = profile?.plan_expires_at || null;
-  const isPro = plan === 'pro' && (!planExpiresAt || new Date(planExpiresAt).getTime() > Date.now());
+  const planTier = ['free', 'plus', 'pro'].includes(plan) ? plan : 'free';
+  const planRank = { free: 0, plus: 1, pro: 2 }[planTier];
+  const isPro = planTier === 'pro' && (!planExpiresAt || new Date(planExpiresAt).getTime() > Date.now());
+  const isPlus = planTier === 'plus' && (!planExpiresAt || new Date(planExpiresAt).getTime() > Date.now());
 
   const value = useMemo(
     () => ({
@@ -124,7 +127,10 @@ export const AuthProvider = ({ children }) => {
       token,
       plan,
       planExpiresAt,
+      planTier,
+      planRank,
       isPro,
+      isPlus,
       signIn,
       signUp,
       signOut,
@@ -141,7 +147,10 @@ export const AuthProvider = ({ children }) => {
       token,
       plan,
       planExpiresAt,
+      planTier,
+      planRank,
       isPro,
+      isPlus,
       signIn,
       signUp,
       signOut,
