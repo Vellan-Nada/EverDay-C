@@ -9,35 +9,34 @@ export const runAiHelper = async (req, res) => {
   }
 
   try {
-    const messages = [
-      {
-        role: 'system',
-        content:
-          'You are EverDay, an encouraging productivity mentor that gives concise, practical advice about habits, focus, notes, and time management.',
-      },
-      {
-        role: 'user',
-        content: prompt.trim(),
-      },
-    ];
-
-    if (context?.length) {
-      messages.splice(1, 0, {
-        role: 'user',
-        content: `Context: ${context}`,
-      });
-    }
-
-    const response = await openai.chat.completions.create({
+    const response = await openai.responses.create({
       model: 'gpt-4o-mini',
-      messages,
       temperature: 0.7,
+      input: [
+        {
+          role: 'system',
+          content:
+            'You are EverDay, an encouraging productivity mentor that gives concise, practical advice about habits, focus, notes, and time management.',
+        },
+        ...(context
+          ? [
+              {
+                role: 'user',
+                content: `Context: ${context}`,
+              },
+            ]
+          : []),
+        {
+          role: 'user',
+          content: prompt.trim(),
+        },
+      ],
     });
 
-    const reply = response?.choices?.[0]?.message?.content?.trim();
+    const reply = response?.output_text?.join('').trim();
 
     if (!reply) {
-      return res.status(500).json({ error: 'AI did not return a response' });
+      return res.status(502).json({ error: 'AI did not return a response' });
     }
 
     res.json({
