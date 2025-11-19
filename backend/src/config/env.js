@@ -1,0 +1,36 @@
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const requiredVars = [
+  'SUPABASE_URL',
+  'SUPABASE_SERVICE_ROLE_KEY',
+  'STRIPE_SECRET_KEY',
+  'STRIPE_PRICE_PRO',
+  'STRIPE_DONATION_PRICE',
+  'STRIPE_SUCCESS_URL',
+  'STRIPE_CANCEL_URL',
+  'OPENAI_API_KEY',
+];
+
+requiredVars.forEach((key) => {
+  if (!process.env[key]) {
+    console.warn(`[env] Missing value for ${key}. Make sure it is set before running in production.`);
+  }
+});
+
+export const env = {
+  nodeEnv: process.env.NODE_ENV || 'development',
+  port: process.env.PORT || 5000,
+  supabaseUrl: process.env.SUPABASE_URL,
+  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
+  stripeSecretKey: process.env.STRIPE_SECRET_KEY,
+  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+  stripePricePro: process.env.STRIPE_PRICE_PRO,
+  stripeDonationPrice: process.env.STRIPE_DONATION_PRICE,
+  stripeSuccessUrl: process.env.STRIPE_SUCCESS_URL,
+  stripeCancelUrl: process.env.STRIPE_CANCEL_URL,
+  openAiApiKey: process.env.OPENAI_API_KEY,
+  clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
+};
