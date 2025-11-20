@@ -150,6 +150,12 @@ export const handleStripeWebhook = async (req, res) => {
           status: session.payment_status,
           tier: session.metadata?.tier,
         });
+
+        if (session.mode === 'subscription' && session.subscription) {
+          const subscription = await stripe.subscriptions.retrieve(session.subscription);
+          await upsertSubscription(subscription);
+        }
+
         break;
       }
       case 'customer.subscription.created':
