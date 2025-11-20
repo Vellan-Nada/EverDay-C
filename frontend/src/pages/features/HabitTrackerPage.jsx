@@ -1,20 +1,290 @@
-import FeaturePlaceholder from '../../components/FeaturePlaceholder.jsx';
-import LoadingSpinner from '../../components/LoadingSpinner.jsx';
-import { useFeaturePlaceholder } from '../../hooks/useFeaturePlaceholder.js';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { supabase } from '../../lib/supabaseClient.js';
+import HabitTable from '../../components/HabitTracker/HabitTable.jsx';
+import AddHabitModal from '../../components/HabitTracker/AddHabitModal.jsx';
+import StreakSummaryCard from '../../components/HabitTracker/StreakSummaryCard.jsx';
+import HistoryList from '../../components/HabitTracker/HistoryList.jsx';
+import '../../styles/HabitTracker.css';
+
+const DATE_WINDOW = 14;
+
+const buildDateRange = (days) => {
+  const today = new Date();
+  const range = [];
+  for (let i = days - 1; i >= 0; i -= 1) {
+    const d = new Date();
+    d.setDate(today.getDate() - i);
+    const iso = d.toISOString().slice(0, 10);
+    const label = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    range.push({ iso, label });
+  }
+  return range;
+};
+
+const todayIso = () => new Date().toISOString().slice(0, 10);
 
 const HabitTrackerPage = () => {
-  const { feature, loading, error } = useFeaturePlaceholder('habits');
+  const [user, setUser] = useState(null);
+  const [isPremium, setIsPremium] = useState(false);
+  const [habits, setHabits] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [logMap, setLogMap] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showIcons, setShowIcons] = useState(true);
+  const [showStreak, setShowStreak] = useState(true);
+  const [modalState, setModalState] = useState({ open: false, habit: null });
+  const [limitReached, setLimitReached] = useState(false);
+  const dates = useMemo(() => buildDateRange(DATE_WINDOW), []);
 
-  if (loading) return <LoadingSpinner label="Preparing habit insights…" />;
-  if (error) return <p style={{ color: 'var(--danger)' }}>{error}</p>;
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data, error: authError } = await supabase.auth.getUser();
+      if (authError || !data?.user) {
+        setError('Please log in to start tracking habits.');
+        setLoading(false);
+        return;
+      }
+      setUser(data.user);
+    };
+    fetchUser();
+  }, []);
+
+  const decorateHabit = useCallback(
+    (habit, habitLogs) => {
+      const statusByDate = {};
+      const today = todayIso();
+      let lastCompleted = null;
+      dates.forEach((date) => {
+        const log = habitLogs[date.iso];
+        if (log?.status === 'completed') {
+          statusByDate[date.iso] = 'completed';
+          lastCompleted = date.label;
+        } else if (log?.status === 'failed') {
+          statusByDate[date.iso] = 'failed';
+        } else if (date.iso < today) {
+          statusByDate[date.iso] = 'failed';
+        } else {
+          statusByDate[date.iso] = 'none';
+        }
+      });
+
+      const streakInfo = computeStreakData(habitLogs, dates);
+      const best = Math.max(habit.best_streak || 0, streakInfo.current);
+      return {
+        ...habit,
+        statusByDate,
+        currentStreak: streakInfo.current,
+        best_streak: best,
+        lastCompleted,
+      };
+    },
+    [dates]
+  );
+
+  const loadHabits = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const { data: profileRow } = await supabase
+        .from('profiles')
+        .select('is_premium')
+        .eq('id', user.id)
+        .single();
+      const premiumFlag = Boolean(profileRow?.is_premium);
+      setIsPremium(premiumFlag);
+      const { data: habitRows, error: habitError } = await supabase
+        .from('habits')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true });
+      if (habitError) throw habitError;
+      const activeHabits = (habitRows || []).filter((habit) => !habit.is_deleted);
+      const deletedHabits = (habitRows || []).filter((habit) => habit.is_deleted);
+      const habitIds = activeHabits.map((habit) => habit.id);
+      let logs = {};
+      if (habitIds.length) {
+        const { data: logRows } = await supabase
+          .from('habit_logs')
+          .select('*')
+          .in('habit_id', habitIds)
+          .gte('log_date', dates[0].iso);
+        if (logRows) {
+          logRows.forEach((log) => {
+            if (!logs[log.habit_id]) logs[log.habit_id] = {};
+            logs[log.habit_id][log.log_date] = log;
+          });
+        }
+      }
+      const updates = [];
+      const decorated = activeHabits.map((habit) => {
+        const decoratedHabit = decorateHabit(habit, logs[habit.id] || {});
+        if (decoratedHabit.best_streak > (habit.best_streak || 0)) {
+          updates.push(
+            supabase.from('habits').update({ best_streak: decoratedHabit.best_streak }).eq('id', habit.id)
+          );
+        }
+        return decoratedHabit;
+      });
+      if (updates.length) {
+        Promise.all(updates).catch((err) => console.error('Best streak update failed', err));
+      }
+      setLimitReached(!premiumFlag && decorated.length >= 10);
+      setHabits(decorated);
+      setHistory(deletedHabits);
+      setLogMap(logs);
+      if (!premiumFlag) {
+        setShowStreak(false);
+      }
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError('Unable to load habits.');
+    } finally {
+      setLoading(false);
+    }
+  }, [user, dates, decorateHabit]);
+
+  useEffect(() => {
+    if (user) {
+      loadHabits();
+    }
+  }, [user, loadHabits]);
+
+  const handleToggleStatus = async (habit, date) => {
+    const logsForHabit = logMap[habit.id] || {};
+    const existing = logsForHabit[date.iso];
+    const isCompleted = existing?.status === 'completed';
+    const nextStatus = isCompleted ? 'failed' : 'completed';
+
+    try {
+      if (existing) {
+        await supabase.from('habit_logs').update({ status: nextStatus }).eq('id', existing.id);
+      } else {
+        await supabase.from('habit_logs').insert({
+          habit_id: habit.id,
+          log_date: date.iso,
+          status: nextStatus,
+        });
+      }
+      await loadHabits();
+    } catch (err) {
+      console.error(err);
+      setError('Unable to update log.');
+    }
+  };
+
+  const handleSaveHabit = async (payload) => {
+    const newHabit = {
+      name: payload.name.trim(),
+      icon_key: payload.icon_key || null,
+    };
+    try {
+      if (payload.id) {
+        await supabase.from('habits').update(newHabit).eq('id', payload.id);
+      } else {
+        await supabase.from('habits').insert({
+          ...newHabit,
+          user_id: user.id,
+        });
+      }
+      setModalState({ open: false, habit: null });
+      await loadHabits();
+    } catch (err) {
+      console.error(err);
+      setError('Unable to save habit.');
+    }
+  };
+
+  const handleDeleteHabit = async (habit) => {
+    await supabase.from('habits').update({ is_deleted: true }).eq('id', habit.id);
+    await loadHabits();
+  };
+
+  const handleRestoreHabit = async (habit) => {
+    await supabase.from('habits').update({ is_deleted: false }).eq('id', habit.id);
+    await loadHabits();
+  };
+
+  if (loading) {
+    return <div className="habit-empty">Loading habits…</div>;
+  }
+
+  if (error) {
+    return <div className="habit-empty">{error}</div>;
+  }
+
+  if (!user) {
+    return <div className="habit-empty">Please sign in to manage your habits.</div>;
+  }
 
   return (
-    <FeaturePlaceholder
-      feature={feature}
-      ctaLabel="Map your habits"
-      onCta={() => alert('Habit tracking widgets will appear here soon!')}
-    />
+    <section className="habit-tracker">
+      <div className="habit-header">
+        <div>
+          <h1>Habit Tracker</h1>
+          <p style={{ color: 'var(--text-muted)' }}>Track your streaks and daily progress.</p>
+        </div>
+        <button type="button" onClick={() => setModalState({ open: true, habit: null })} disabled={limitReached}>
+          + Add Habit
+        </button>
+      </div>
+
+      <div className="habit-subheader">
+        {isPremium && (
+          <label>
+            <input type="checkbox" checked={showStreak} onChange={() => setShowStreak((prev) => !prev)} />
+            Streak
+          </label>
+        )}
+        <label>
+          <input type="checkbox" checked={showIcons} onChange={() => setShowIcons((prev) => !prev)} />
+          Icons
+        </label>
+        <span className="habit-info">i</span>
+      </div>
+
+      <HabitTable
+        habits={habits}
+        dates={dates}
+        showIcons={showIcons}
+        showStreak={showStreak}
+        isPremium={isPremium}
+        onToggleStatus={handleToggleStatus}
+        onEditHabit={(habit) => setModalState({ open: true, habit })}
+        onDeleteHabit={handleDeleteHabit}
+      />
+
+      {isPremium && <StreakSummaryCard habits={habits} />}
+
+      <HistoryList items={history} onRestore={handleRestoreHabit} />
+
+      <AddHabitModal
+        open={modalState.open}
+        onClose={() => setModalState({ open: false, habit: null })}
+        onSubmit={handleSaveHabit}
+        initialHabit={modalState.habit}
+        isPremium={isPremium}
+        limitReached={limitReached}
+      />
+    </section>
   );
+};
+
+const computeStreakData = (habitLogs, dates) => {
+  const today = todayIso();
+  let current = 0;
+  for (let i = dates.length - 1; i >= 0; i -= 1) {
+    const dateStr = dates[i].iso;
+    const log = habitLogs[dateStr];
+    if (dateStr === today && !log) break;
+    if (log?.status === 'completed') {
+      current += 1;
+    } else if (log?.status === 'failed' || (!log && dateStr < today)) {
+      break;
+    }
+  }
+  return { current };
 };
 
 export default HabitTrackerPage;
