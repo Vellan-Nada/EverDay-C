@@ -20,19 +20,20 @@ const HabitTable = ({
 
   return (
     <div className="habit-table-wrapper">
-      <table className="habit-table">
+      <div className="habit-table-scroller">
+        <table className="habit-table">
         <thead>
           <tr>
-            <th>#</th>
-            <th>Habit</th>
-            {showIcons && <th>Icon</th>}
-            {showStreak && isPremium && <th>Streak</th>}
+            <th className="sticky-col">#</th>
+            <th className="sticky-col habit-col">Habit</th>
+            <th className="sticky-col actions-col">Actions</th>
+            {showIcons && <th className="sticky-col icon-col">Icon</th>}
+            {showStreak && isPremium && <th className="sticky-col streak-col">Streak</th>}
             {dates.map((date) => (
               <th key={date.iso} className="sticky-dates">
                 {date.label}
               </th>
             ))}
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -50,7 +51,8 @@ const HabitTable = ({
             />
           ))}
         </tbody>
-      </table>
+        </table>
+      </div>
     </div>
   );
 };

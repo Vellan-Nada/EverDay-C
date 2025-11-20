@@ -73,6 +73,10 @@
   overflow: hidden;
 }
 
+.habit-table-scroller {
+  overflow-x: auto;
+}
+
 .habit-table {
   width: 100%;
   border-collapse: collapse;
@@ -125,8 +129,20 @@
   color: var(--text-muted);
 }
 
+.status-na {
+  background: rgba(148, 163, 184, 0.15);
+  color: rgba(71, 85, 105, 0.8);
+  cursor: default;
+}
+
 .habit-icon {
   font-size: 1.3rem;
+}
+
+.habit-row-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .habit-row-actions button {
@@ -134,7 +150,6 @@
   border-radius: 0.6rem;
   background: #fff;
   padding: 0.35rem 0.75rem;
-  margin-right: 0.4rem;
 }
 
 .streak-card,
@@ -222,8 +237,34 @@
   text-align: center;
 }
 
+.sticky-col {
+  position: sticky;
+  left: 0;
+  background: #fff;
+  z-index: 2;
+}
+
+.sticky-col.habit-col {
+  left: 55px;
+}
+
+.sticky-col.actions-col {
+  left: 210px;
+}
+
+.sticky-col.icon-col {
+  left: 310px;
+}
+
+.sticky-col.streak-col {
+  left: 380px;
+}
+
 @media (max-width: 768px) {
   .habit-table-wrapper {
+    overflow: hidden;
+  }
+  .habit-table-scroller {
     overflow-x: auto;
   }
   .habit-header {

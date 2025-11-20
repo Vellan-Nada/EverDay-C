@@ -10,8 +10,8 @@ const HabitRow = ({
 }) => {
   return (
     <tr>
-      <td>{index + 1}</td>
-      <td>
+      <td className="sticky-col">{index + 1}</td>
+      <td className="sticky-col habit-col">
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <strong>{habit.name}</strong>
           {habit.lastCompleted && (
@@ -21,13 +21,23 @@ const HabitRow = ({
           )}
         </div>
       </td>
+      <td className="sticky-col actions-col">
+        <div className="habit-row-actions">
+          <button type="button" onClick={() => onEdit(habit)}>
+            Edit
+          </button>
+          <button type="button" onClick={() => onDelete(habit)}>
+            Delete
+          </button>
+        </div>
+      </td>
       {showIcons && (
-        <td>
+        <td className="sticky-col icon-col">
           <span className="habit-icon">{habit.icon_key || '📌'}</span>
         </td>
       )}
       {showStreak && (
-        <td>
+        <td className="sticky-col streak-col">
           <span title={`Current: ${habit.currentStreak} • Best: ${habit.best_streak}`}>
             {habit.currentStreak}-day
           </span>
@@ -37,6 +47,9 @@ const HabitRow = ({
         const cellStatus = habit.statusByDate[date.iso];
         let className = 'status-cell status-empty';
         let symbol = '';
+        if (cellStatus === 'na') {
+          className = 'status-cell status-na';
+        }
         if (cellStatus === 'completed') {
           className = 'status-cell status-completed';
           symbol = '✔';
@@ -48,7 +61,7 @@ const HabitRow = ({
           <td key={date.iso} className="sticky-dates">
             <div
               className={className}
-              onClick={() => onToggleStatus(habit, date)}
+              onClick={() => cellStatus !== 'na' && onToggleStatus(habit, date)}
               role="button"
               aria-label={`Toggle ${habit.name} on ${date.label}`}
             >
@@ -57,14 +70,6 @@ const HabitRow = ({
           </td>
         );
       })}
-      <td className="habit-row-actions">
-        <button type="button" onClick={() => onEdit(habit)}>
-          Edit
-        </button>
-        <button type="button" onClick={() => onDelete(habit)}>
-          Delete
-        </button>
-      </td>
     </tr>
   );
 };
