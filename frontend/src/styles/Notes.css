@@ -1,0 +1,258 @@
+.notes-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.notes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.notes-header h1 {
+  margin: 0;
+}
+
+.notes-header button.info-btn {
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  width: 36px;
+  height: 36px;
+  background: #fff;
+  font-weight: 600;
+}
+
+.notes-form-card {
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.notes-upgrade-callout {
+  margin-top: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(29, 78, 216, 0.2);
+  background: rgba(37, 99, 235, 0.08);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  color: #1e3a8a;
+}
+
+.notes-form-header h2 {
+  margin: 0;
+}
+
+.notes-form-header p {
+  margin: 0.35rem 0 1rem;
+  color: var(--text-muted);
+}
+
+.notes-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.notes-form input,
+.notes-form textarea {
+  border-radius: 0.9rem;
+  border: 1px solid var(--border);
+  padding: 0.65rem 0.9rem;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.notes-form textarea {
+  min-height: 140px;
+}
+
+.notes-form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.notes-form-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 24px;
+}
+
+.notes-form-warning {
+  color: #b45309;
+  font-size: 0.9rem;
+}
+
+.notes-form-error {
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
+.notes-form-buttons {
+  display: flex;
+  gap: 0.65rem;
+}
+
+.notes-btn {
+  border-radius: 0.8rem;
+  border: none;
+  padding: 0.55rem 1.1rem;
+  font-weight: 600;
+}
+
+.notes-btn.primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.notes-btn.secondary {
+  background: rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+}
+
+.notes-btn.danger {
+  background: rgba(220, 38, 38, 0.15);
+  color: #b91c1c;
+}
+
+.notes-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1rem;
+}
+
+.notes-empty {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.note-card {
+  border-radius: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 5px 12px rgba(15, 23, 42, 0.06);
+  min-height: 210px;
+  position: relative;
+}
+
+.note-card h3 {
+  margin: 0 0 0.5rem;
+}
+
+.note-card p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.note-card input,
+.note-card textarea {
+  border-radius: 0.7rem;
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+}
+
+.note-card textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.note-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.note-card-actions {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.note-card-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.note-color-picker {
+  position: relative;
+}
+
+.color-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  cursor: pointer;
+}
+
+.color-popover {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  z-index: 10;
+  background: #fff;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  padding: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  width: 180px;
+}
+
+.color-popover button {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+.color-popover p {
+  width: 100%;
+  margin: 0 0 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.notes-upgrade-btn {
+  border: none;
+  border-radius: 0.7rem;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  padding: 0.45rem 0.9rem;
+}
+
+.notes-upgrade-btn--full {
+  padding: 0.65rem 1.2rem;
+}
+
+.notes-upgrade-btn--compact {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.8rem;
+}
