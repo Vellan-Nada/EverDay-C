@@ -21,6 +21,40 @@ const buildDateRangeFrom = (startDate) => {
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
+const decorateHabit = (habit, habitLogs, range) => {
+  const today = todayIso();
+  const statusByDate = {};
+  let lastCompleted = null;
+  const createdDate = habit.created_at?.slice(0, 10);
+  range.forEach((date) => {
+    if (createdDate && date.iso < createdDate) {
+      statusByDate[date.iso] = 'na';
+      return;
+    }
+    const log = habitLogs[date.iso];
+    if (log?.status === 'completed') {
+      statusByDate[date.iso] = 'completed';
+      lastCompleted = date.label;
+    } else if (log?.status === 'failed') {
+      statusByDate[date.iso] = 'failed';
+    } else if (date.iso < today) {
+      statusByDate[date.iso] = 'failed';
+    } else {
+      statusByDate[date.iso] = 'none';
+    }
+  });
+
+  const streakInfo = computeStreakData(habitLogs, range, createdDate);
+  const best = Math.max(habit.best_streak || 0, streakInfo.current);
+  return {
+    ...habit,
+    statusByDate,
+    currentStreak: streakInfo.current,
+    best_streak: best,
+    lastCompleted,
+  };
+};
+
 const HabitTrackerPage = () => {
   const [user, setUser] = useState(null);
   const [isPremium, setIsPremium] = useState(false);
@@ -47,43 +81,6 @@ const HabitTrackerPage = () => {
     };
     fetchUser();
   }, []);
-
-  const decorateHabit = useCallback(
-    (habit, habitLogs) => {
-      const statusByDate = {};
-      const today = todayIso();
-      let lastCompleted = null;
-      const createdDate = habit.created_at?.slice(0, 10);
-      dates.forEach((date) => {
-        if (createdDate && date.iso < createdDate) {
-          statusByDate[date.iso] = 'na';
-          return;
-        }
-        const log = habitLogs[date.iso];
-        if (log?.status === 'completed') {
-          statusByDate[date.iso] = 'completed';
-          lastCompleted = date.label;
-        } else if (log?.status === 'failed') {
-          statusByDate[date.iso] = 'failed';
-        } else if (date.iso < today) {
-          statusByDate[date.iso] = 'failed';
-        } else {
-          statusByDate[date.iso] = 'none';
-        }
-      });
-
-      const streakInfo = computeStreakData(habitLogs, dates, createdDate);
-      const best = Math.max(habit.best_streak || 0, streakInfo.current);
-      return {
-        ...habit,
-        statusByDate,
-        currentStreak: streakInfo.current,
-        best_streak: best,
-        lastCompleted,
-      };
-    },
-    [dates]
-  );
 
   const loadHabits = useCallback(async () => {
     if (!user) return;
@@ -129,8 +126,9 @@ const HabitTrackerPage = () => {
         }
       }
       const updates = [];
+      const range = activeHabits.length ? buildDateRangeFrom(earliestDate) : [];
       const decorated = activeHabits.map((habit) => {
-        const decoratedHabit = decorateHabit(habit, logs[habit.id] || {});
+        const decoratedHabit = decorateHabit(habit, logs[habit.id] || {}, range);
         if (decoratedHabit.best_streak > (habit.best_streak || 0)) {
           updates.push(
             supabase.from('habits').update({ best_streak: decoratedHabit.best_streak }).eq('id', habit.id)
@@ -141,11 +139,7 @@ const HabitTrackerPage = () => {
       if (updates.length) {
         Promise.all(updates).catch((err) => console.error('Best streak update failed', err));
       }
-      if (decorated.length) {
-        setDates(buildDateRangeFrom(earliestDate));
-      } else {
-        setDates([]);
-      }
+      setDates(range);
       setLimitReached(!premiumFlag && decorated.length >= 10);
       setHabits(decorated);
       setHistory(deletedHabits);
@@ -160,7 +154,7 @@ const HabitTrackerPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, decorateHabit]);
+  }, [user]);
 
   useEffect(() => {
     if (user) {
