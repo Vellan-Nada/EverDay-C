@@ -47,25 +47,40 @@ const HabitRow = ({
         const cellStatus = habit.statusByDate[date.iso];
         let className = 'status-cell status-empty';
         let symbol = '';
+        let content = null;
+        let clickable = true;
         if (cellStatus === 'na') {
           className = 'status-cell status-na';
-        }
-        if (cellStatus === 'completed') {
+          clickable = false;
+        } else if (cellStatus === 'completed') {
           className = 'status-cell status-completed';
           symbol = '✔';
         } else if (cellStatus === 'failed') {
           className = 'status-cell status-failed';
           symbol = '✖';
+        } else if (cellStatus === 'none') {
+          className = 'status-cell status-choice';
+          clickable = false;
+          content = (
+            <div className="status-choice-options">
+              <button type="button" onClick={() => onToggleStatus(habit, date, 'completed')}>
+                ✔
+              </button>
+              <button type="button" onClick={() => onToggleStatus(habit, date, 'failed')}>
+                ✖
+              </button>
+            </div>
+          );
         }
         return (
           <td key={date.iso} className="sticky-dates">
             <div
               className={className}
-              onClick={() => cellStatus !== 'na' && onToggleStatus(habit, date)}
-              role="button"
+              onClick={() => clickable && onToggleStatus(habit, date)}
+              role={clickable ? 'button' : 'group'}
               aria-label={`Toggle ${habit.name} on ${date.label}`}
             >
-              {symbol}
+              {content || symbol}
             </div>
           </td>
         );

@@ -161,7 +161,7 @@ const HabitTrackerPage = () => {
     }
   }, [user, loadHabits]);
 
-  const handleToggleStatus = async (habit, date) => {
+  const handleToggleStatus = async (habit, date, desiredStatus = null) => {
     const createdDate = habit.created_at?.slice(0, 10);
     if (createdDate && date.iso < createdDate) {
       return;
@@ -169,7 +169,10 @@ const HabitTrackerPage = () => {
     const logsForHabit = logMap[habit.id] || {};
     const existing = logsForHabit[date.iso];
     const isCompleted = existing?.status === 'completed';
-    const nextStatus = isCompleted ? 'failed' : 'completed';
+    const nextStatus = desiredStatus || (isCompleted ? 'failed' : 'completed');
+    if (desiredStatus && existing?.status === desiredStatus) {
+      return;
+    }
 
     try {
       if (existing) {
@@ -197,22 +200,10 @@ const HabitTrackerPage = () => {
       if (payload.id) {
         await supabase.from('habits').update(newHabit).eq('id', payload.id);
       } else {
-        const { data: created, error: insertError } = await supabase
-          .from('habits')
-          .insert({
-            ...newHabit,
-            user_id: user.id,
-          })
-          .select()
-          .single();
-        if (insertError) throw insertError;
-        if (created?.id && payload.initialStatus) {
-          await supabase.from('habit_logs').upsert({
-            habit_id: created.id,
-            log_date: todayIso(),
-            status: payload.initialStatus,
-          });
-        }
+        await supabase.from('habits').insert({
+          ...newHabit,
+          user_id: user.id,
+        });
       }
       setModalState({ open: false, habit: null });
       await loadHabits();
