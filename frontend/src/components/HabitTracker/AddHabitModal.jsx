@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import IconPicker from './IconPicker.jsx';
 
-const defaultState = { name: '', icon_key: '' };
+const defaultState = { name: '', icon_key: '', initialStatus: 'completed' };
 
 const AddHabitModal = ({ open, onClose, onSubmit, initialHabit, isPremium, limitReached }) => {
   const [form, setForm] = useState(defaultState);
@@ -9,7 +9,7 @@ const AddHabitModal = ({ open, onClose, onSubmit, initialHabit, isPremium, limit
 
   useEffect(() => {
     if (initialHabit) {
-      setForm({ name: initialHabit.name || '', icon_key: initialHabit.icon_key || '' });
+      setForm({ name: initialHabit.name || '', icon_key: initialHabit.icon_key || '', initialStatus: 'completed' });
     } else {
       setForm(defaultState);
     }
@@ -67,6 +67,38 @@ const AddHabitModal = ({ open, onClose, onSubmit, initialHabit, isPremium, limit
           <p style={{ marginBottom: '0.35rem' }}>Icon</p>
           <IconPicker value={form.icon_key} onChange={(icon) => setForm((prev) => ({ ...prev, icon_key: icon }))} isPremium={isPremium} />
         </div>
+        {!initialHabit && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            <span>Today's status</span>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <input
+                  type="radio"
+                  name="initialStatus"
+                  value="completed"
+                  checked={form.initialStatus === 'completed'}
+                  onChange={handleChange}
+                  disabled={limitReached}
+                />
+                Completed (✔)
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <input
+                  type="radio"
+                  name="initialStatus"
+                  value="failed"
+                  checked={form.initialStatus === 'failed'}
+                  onChange={handleChange}
+                  disabled={limitReached}
+                />
+                Failed (✖)
+              </label>
+            </div>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+              Choose how today should start for this habit. You can change it later.
+            </p>
+          </div>
+        )}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
           <button type="button" className="secondaryButton" onClick={onClose}>
             Cancel

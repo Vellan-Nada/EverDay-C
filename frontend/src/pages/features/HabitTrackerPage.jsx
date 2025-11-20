@@ -88,10 +88,11 @@ const HabitTrackerPage = () => {
     try {
       const { data: profileRow } = await supabase
         .from('profiles')
-        .select('is_premium')
+        .select('is_premium, plan')
         .eq('id', user.id)
         .single();
-      const premiumFlag = Boolean(profileRow?.is_premium);
+      const planName = profileRow?.plan || 'free';
+      const premiumFlag = Boolean(profileRow?.is_premium) || ['plus', 'pro'].includes(planName);
       setIsPremium(premiumFlag);
       const { data: habitRows, error: habitError } = await supabase
         .from('habits')
@@ -144,9 +145,7 @@ const HabitTrackerPage = () => {
       setHabits(decorated);
       setHistory(deletedHabits);
       setLogMap(logs);
-      if (!premiumFlag) {
-        setShowStreak(false);
-      }
+      setShowStreak(premiumFlag);
       setError(null);
     } catch (err) {
       console.error(err);
@@ -198,10 +197,22 @@ const HabitTrackerPage = () => {
       if (payload.id) {
         await supabase.from('habits').update(newHabit).eq('id', payload.id);
       } else {
-        await supabase.from('habits').insert({
-          ...newHabit,
-          user_id: user.id,
-        });
+        const { data: created, error: insertError } = await supabase
+          .from('habits')
+          .insert({
+            ...newHabit,
+            user_id: user.id,
+          })
+          .select()
+          .single();
+        if (insertError) throw insertError;
+        if (created?.id && payload.initialStatus) {
+          await supabase.from('habit_logs').upsert({
+            habit_id: created.id,
+            log_date: todayIso(),
+            status: payload.initialStatus,
+          });
+        }
       }
       setModalState({ open: false, habit: null });
       await loadHabits();

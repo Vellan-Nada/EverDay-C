@@ -27,6 +27,7 @@ const upsertSubscription = async ({ id, status, current_period_end, metadata, it
     items?.data?.[0]?.price?.lookup_key ||
     items?.data?.[0]?.price?.nickname ||
     'pro';
+  const normalizedPlan = plan === 'plus' ? 'plus' : plan === 'pro' ? 'pro' : 'pro';
   const expiresAtDate = new Date(current_period_end * 1000);
   const expiresAt = expiresAtDate.toISOString();
   const isWithinPaidPeriod = expiresAtDate.getTime() > Date.now();
@@ -37,7 +38,7 @@ const upsertSubscription = async ({ id, status, current_period_end, metadata, it
       user_id: userId,
       status,
       current_period_end: expiresAt,
-      plan,
+      plan: normalizedPlan,
       updated_at: new Date().toISOString(),
     },
     { onConflict: 'id' }
@@ -45,11 +46,14 @@ const upsertSubscription = async ({ id, status, current_period_end, metadata, it
 
   await updateCustomerOnProfile(userId, customer);
 
-  if (SUBSCRIPTION_ACTIVE_STATUSES.has(status) || isWithinPaidPeriod) {
+  const shouldMarkPremium = SUBSCRIPTION_ACTIVE_STATUSES.has(status) || isWithinPaidPeriod;
+
+  if (shouldMarkPremium) {
     await supabaseAdmin
       .from('profiles')
       .update({
-        plan: 'pro',
+        plan: normalizedPlan,
+        is_premium: true,
         plan_expires_at: expiresAt,
         updated_at: new Date().toISOString(),
       })
@@ -59,6 +63,7 @@ const upsertSubscription = async ({ id, status, current_period_end, metadata, it
       .from('profiles')
       .update({
         plan: 'free',
+        is_premium: false,
         plan_expires_at: expiresAt,
         updated_at: new Date().toISOString(),
       })
