@@ -1,22 +1,5 @@
 import React from 'react';
-
-const FREE_ICONS = [
-  { key: 'sun', label: 'Morning', symbol: '☀️' },
-  { key: 'book', label: 'Reading', symbol: '📚' },
-  { key: 'weight', label: 'Workout', symbol: '🏋️‍♂️' },
-  { key: 'laptop', label: 'Focus', symbol: '💻' },
-  { key: 'water', label: 'Hydrate', symbol: '💧' },
-  { key: 'sleep', label: 'Sleep', symbol: '😴' },
-];
-
-const PREMIUM_ICONS = [
-  { key: 'meditation', label: 'Calm', symbol: '🧘' },
-  { key: 'fruit', label: 'Eat healthy', symbol: '🍎' },
-  { key: 'running', label: 'Run', symbol: '🏃' },
-  { key: 'guitar', label: 'Practice', symbol: '🎸' },
-  { key: 'language', label: 'Language', symbol: '🌐' },
-  { key: 'mind', label: 'Mindfulness', symbol: '🧠' },
-];
+import { FREE_ICONS, PREMIUM_ICONS } from './iconConfig.js';
 
 const IconPicker = ({ value, onChange, isPremium }) => {
   const icons = isPremium ? [...FREE_ICONS, ...PREMIUM_ICONS] : FREE_ICONS;

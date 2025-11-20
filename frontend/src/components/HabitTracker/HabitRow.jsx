@@ -1,3 +1,5 @@
+import { getIconSymbol } from './iconConfig.js';
+
 const HabitRow = ({
   index,
   habit,
@@ -33,7 +35,7 @@ const HabitRow = ({
       </td>
       {showIcons && (
         <td className="sticky-col icon-col">
-          <span className="habit-icon">{habit.icon_key || '📌'}</span>
+          <span className="habit-icon">{getIconSymbol(habit.icon_key) || '📌'}</span>
         </td>
       )}
       {showStreak && (
