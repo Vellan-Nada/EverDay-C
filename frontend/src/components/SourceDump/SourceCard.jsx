@@ -95,7 +95,15 @@ const SourceCard = ({ card, isPremium, onChangeColor, onClick }) => {
       </div>
       <div className="sd-card-actions">
         <div className="sd-color-wrap">
-          <button type="button" className="sd-color" onClick={handleColorClick} aria-label="Change background color">
+          <button
+            type="button"
+            className="sd-color"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleColorClick();
+            }}
+            aria-label="Change background color"
+          >
             ●
           </button>
           {colorMenu && isPremium && (
