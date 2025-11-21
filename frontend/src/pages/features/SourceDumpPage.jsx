@@ -1,19 +1,167 @@
-import FeaturePlaceholder from '../../components/FeaturePlaceholder.jsx';
+import { useEffect, useState } from 'react';
+import { supabase } from '../../lib/supabaseClient.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
-import { useFeaturePlaceholder } from '../../hooks/useFeaturePlaceholder.js';
+import SourceDumpModal from '../../components/SourceDump/SourceDumpModal.jsx';
+import SourceCard from '../../components/SourceDump/SourceCard.jsx';
+import usePremiumStatus from '../../hooks/usePremiumStatus.js';
+import '../../styles/SourceDump.css';
 
 const SourceDumpPage = () => {
-  const { feature, loading, error } = useFeaturePlaceholder('sourceDump');
+  const [user, setUser] = useState(null);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [activeItem, setActiveItem] = useState(null);
 
-  if (loading) return <LoadingSpinner label="Preparing Source Dump…" />;
-  if (error) return <p style={{ color: 'var(--danger)' }}>{error}</p>;
+  useEffect(() => {
+    const init = async () => {
+      const { data, error: authError } = await supabase.auth.getUser();
+      if (authError || !data?.user) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+      setUser(data.user);
+    };
+    init();
+  }, []);
+
+  const { isPremium, loading: premiumLoading } = usePremiumStatus(user?.id);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchItems = async () => {
+      setLoading(true);
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('source_dumps')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        if (fetchError) throw fetchError;
+        setItems(data || []);
+        setError(null);
+      } catch (err) {
+        console.error(err);
+        setError('Unable to load source dumps.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchItems();
+  }, [user]);
+
+  const handleSave = async (payload) => {
+    if (!user) return;
+    if (activeItem) {
+      const { data, error: updateError } = await supabase
+        .from('source_dumps')
+        .update({
+          title: payload.title,
+          links: payload.links || null,
+          text_content: payload.text_content || null,
+          screenshots: payload.screenshots || [],
+        })
+        .eq('id', activeItem.id)
+        .select()
+        .single();
+      if (updateError) throw updateError;
+      setItems((prev) => prev.map((i) => (i.id === activeItem.id ? data : i)));
+    } else {
+      const { data, error: insertError } = await supabase
+        .from('source_dumps')
+        .insert({
+          user_id: user.id,
+          title: payload.title,
+          links: payload.links || null,
+          text_content: payload.text_content || null,
+          screenshots: payload.screenshots || [],
+        })
+        .select()
+        .single();
+      if (insertError) throw insertError;
+      setItems((prev) => [data, ...prev]);
+    }
+    setModalOpen(false);
+    setActiveItem(null);
+  };
+
+  const handleDelete = async (card) => {
+    if (!window.confirm('Delete this source? This action cannot be undone.')) return;
+    const { error: deleteError } = await supabase.from('source_dumps').delete().eq('id', card.id);
+    if (deleteError) {
+      alert('Unable to delete.');
+      return;
+    }
+    setItems((prev) => prev.filter((i) => i.id !== card.id));
+  };
+
+  const handleChangeColor = async (card, color) => {
+    if (!isPremium) return;
+    const { data, error: updateError } = await supabase
+      .from('source_dumps')
+      .update({ background_color: color })
+      .eq('id', card.id)
+      .select()
+      .single();
+    if (updateError) {
+      alert('Unable to update color');
+      return;
+    }
+    setItems((prev) => prev.map((i) => (i.id === card.id ? data : i)));
+  };
+
+  if (loading || premiumLoading) return <LoadingSpinner label="Loading source dump…" />;
+  if (!user) return <div className="sd-empty">Please log in to use Source Dump.</div>;
 
   return (
-    <FeaturePlaceholder
-      feature={feature}
-      ctaLabel="Capture a resource"
-      onCta={() => alert('Upload & clipping experience coming next.')}
-    />
+    <section className="sd-page">
+      <div className="sd-header">
+        <div>
+          <p className="sd-subtitle">Use Source Dump to store links, notes, and screenshots related to your work.</p>
+          <h1>Source dump</h1>
+        </div>
+        <div className="sd-info" title="Use Source Dump to store links, notes, and screenshots related to your work.">i</div>
+      </div>
+      <div className="sd-actions">
+        <button type="button" className="sd-btn primary" onClick={() => { setActiveItem(null); setModalOpen(true); }}>
+          + Add source
+        </button>
+      </div>
+      {error && <p className="sd-error">{error}</p>}
+      {items.length === 0 ? (
+        <div className="sd-empty">No sources yet. Click “+” to dump your first links, notes, or screenshots.</div>
+      ) : (
+        <div className="sd-grid">
+          {items.map((card) => (
+            <SourceCard
+              key={card.id}
+              card={card}
+              isPremium={isPremium}
+              onEdit={(c) => {
+                setActiveItem(c);
+                setModalOpen(true);
+              }}
+              onDelete={handleDelete}
+              onChangeColor={handleChangeColor}
+            />
+          ))}
+        </div>
+      )}
+
+      <SourceDumpModal
+        isOpen={modalOpen}
+        initialData={activeItem}
+        isPremium={isPremium}
+        userId={user.id}
+        onClose={() => {
+          setModalOpen(false);
+          setActiveItem(null);
+        }}
+        onSaved={handleSave}
+      />
+    </section>
   );
 };
 
