@@ -133,7 +133,7 @@ const AIDashboard = () => {
   const [sending, setSending] = useState(false);
 
   const isPremium = Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
-  const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+  const apiBase = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
   useEffect(() => {
     if (authLoading || profileLoading) return;
@@ -146,7 +146,7 @@ const AIDashboard = () => {
     const load = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${apiBase}/api/ai/dashboard`, {
+        const res = await fetch(`${apiBase}/ai/dashboard`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -173,7 +173,7 @@ const AIDashboard = () => {
     const next = [...conversation, { role: 'user', content: msg }];
     setConversation(next);
     try {
-      const res = await fetch(`${apiBase}/api/ai/chat`, {
+      const res = await fetch(`${apiBase}/ai/chat`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
