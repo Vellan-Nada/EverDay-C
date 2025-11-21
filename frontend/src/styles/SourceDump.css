@@ -238,8 +238,10 @@
   border: 1px dashed var(--border);
   border-radius: 0.8rem;
   min-height: 80px;
+  max-height: 120px;
   padding: 0.6rem;
   color: var(--text-muted);
+  overflow: auto;
 }
 
 .sd-shots .sd-shot-item {
