@@ -1,20 +1,6 @@
-import FeaturePlaceholder from '../../components/FeaturePlaceholder.jsx';
-import LoadingSpinner from '../../components/LoadingSpinner.jsx';
-import { useFeaturePlaceholder } from '../../hooks/useFeaturePlaceholder.js';
+import JournalPage from './JournalPage.jsx';
 
-const JournalingPage = () => {
-  const { feature, loading, error } = useFeaturePlaceholder('journaling');
-
-  if (loading) return <LoadingSpinner label="Opening journal…" />;
-  if (error) return <p style={{ color: 'var(--danger)' }}>{error}</p>;
-
-  return (
-    <FeaturePlaceholder
-      feature={feature}
-      ctaLabel="Start writing"
-      onCta={() => alert('Daily journaling canvas coming right up.')}
-    />
-  );
-};
+// Re-export for existing route wiring (keeps path /journaling working)
+const JournalingPage = () => <JournalPage />;
 
 export default JournalingPage;
