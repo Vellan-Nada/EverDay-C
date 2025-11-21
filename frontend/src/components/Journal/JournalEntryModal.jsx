@@ -14,12 +14,15 @@ const moodOptions = ['Very happy', 'Happy', 'Neutral', 'Sad', 'Stressed'];
 const JournalEntryModal = ({ isOpen, dateKey, existingEntry, onSave, onDelete, onClose }) => {
   const [form, setForm] = useState(EMPTY);
   const [error, setError] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (existingEntry) {
       setForm({ ...EMPTY, ...existingEntry });
+      setIsEditing(false);
     } else {
       setForm(EMPTY);
+      setIsEditing(true); // new entry: allow editing immediately
     }
     setError(null);
   }, [existingEntry, dateKey]);
@@ -38,6 +41,7 @@ const JournalEntryModal = ({ isOpen, dateKey, existingEntry, onSave, onDelete, o
     }
     setError(null);
     onSave(form);
+    setIsEditing(false);
   };
 
   return (
@@ -50,27 +54,52 @@ const JournalEntryModal = ({ isOpen, dateKey, existingEntry, onSave, onDelete, o
         <div className="journal-form">
           <label>
             <span>Thoughts</span>
-            <textarea rows={3} value={form.thoughts} onChange={(e) => handleChange('thoughts', e.target.value)} />
+            <textarea
+              rows={3}
+              value={form.thoughts}
+              onChange={(e) => handleChange('thoughts', e.target.value)}
+              readOnly={!isEditing}
+            />
           </label>
           <label>
             <span>All the good things happened today</span>
-            <textarea rows={2} value={form.good_things} onChange={(e) => handleChange('good_things', e.target.value)} />
+            <textarea
+              rows={2}
+              value={form.good_things}
+              onChange={(e) => handleChange('good_things', e.target.value)}
+              readOnly={!isEditing}
+            />
           </label>
           <label>
             <span>All the bad things happened today</span>
-            <textarea rows={2} value={form.bad_things} onChange={(e) => handleChange('bad_things', e.target.value)} />
+            <textarea
+              rows={2}
+              value={form.bad_things}
+              onChange={(e) => handleChange('bad_things', e.target.value)}
+              readOnly={!isEditing}
+            />
           </label>
           <label>
             <span>Lessons learnt</span>
-            <textarea rows={2} value={form.lessons} onChange={(e) => handleChange('lessons', e.target.value)} />
+            <textarea
+              rows={2}
+              value={form.lessons}
+              onChange={(e) => handleChange('lessons', e.target.value)}
+              readOnly={!isEditing}
+            />
           </label>
           <label>
             <span>Dreams</span>
-            <textarea rows={2} value={form.dreams} onChange={(e) => handleChange('dreams', e.target.value)} />
+            <textarea
+              rows={2}
+              value={form.dreams}
+              onChange={(e) => handleChange('dreams', e.target.value)}
+              readOnly={!isEditing}
+            />
           </label>
           <label>
             <span>Mood</span>
-            <select value={form.mood} onChange={(e) => handleChange('mood', e.target.value)}>
+            <select value={form.mood} onChange={(e) => handleChange('mood', e.target.value)} disabled={!isEditing}>
               <option value="">Select mood</option>
               {moodOptions.map((m) => (
                 <option key={m} value={m}>{m}</option>
@@ -80,20 +109,32 @@ const JournalEntryModal = ({ isOpen, dateKey, existingEntry, onSave, onDelete, o
         </div>
         {error && <p className="journal-error">{error}</p>}
         <div className="journal-modal-actions">
-          {existingEntry && (
-            <button
-              type="button"
-              className="journal-btn danger"
-              onClick={() => {
-                if (window.confirm('Delete this entry?')) onDelete();
-              }}
-            >
-              Delete
-            </button>
+          {existingEntry && !isEditing && (
+            <>
+              <button type="button" className="journal-btn ghost" onClick={() => setIsEditing(true)}>
+                Edit
+              </button>
+              <button
+                type="button"
+                className="journal-btn danger"
+                onClick={() => {
+                  if (window.confirm('Delete this entry?')) onDelete();
+                }}
+              >
+                Delete
+              </button>
+            </>
           )}
-          <div style={{ flex: 1 }} />
-          <button type="button" className="journal-btn ghost" onClick={onClose}>Cancel</button>
-          <button type="button" className="journal-btn primary" onClick={handleSubmit}>Save</button>
+          {(!existingEntry || isEditing) && (
+            <>
+              <button type="button" className="journal-btn ghost" onClick={onClose}>
+                Cancel
+              </button>
+              <button type="button" className="journal-btn primary" onClick={handleSubmit}>
+                Save
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
