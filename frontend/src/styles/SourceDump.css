@@ -164,6 +164,11 @@
   border: 1px solid rgba(15, 23, 42, 0.1);
 }
 
+.sd-color-default {
+  background: #fff;
+  border: 1px solid var(--border) !important;
+}
+
 .sd-locked {
   font-size: 0.85rem;
   color: var(--text-muted);

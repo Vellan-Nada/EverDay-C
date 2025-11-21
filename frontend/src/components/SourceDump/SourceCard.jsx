@@ -122,15 +122,13 @@ const SourceCard = ({ card, isPremium, onChangeColor, onClick }) => {
               ))}
               <button
                 type="button"
-                style={{ background: '#fff', border: '1px solid var(--border)' }}
+                className="sd-color-default"
                 onClick={(e) => {
                   e.stopPropagation();
                   onChangeColor(card, null);
                   setColorMenu(false);
                 }}
-              >
-                Default
-              </button>
+              />
             </div>
           )}
           {lockedMsg && <div className="sd-locked">Premium feature</div>}
