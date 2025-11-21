@@ -191,6 +191,8 @@
   border-radius: var(--radius);
   padding: 1rem;
   width: min(720px, 90vw);
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: var(--shadow-soft);
   display: flex;
   flex-direction: column;
