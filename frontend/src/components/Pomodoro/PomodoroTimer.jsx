@@ -16,6 +16,7 @@ const PomodoroTimer = ({
   secondsLeft,
   isRunning,
   onToggle,
+  onRestart,
   onSelectMode,
   title = 'Pomodoro',
 }) => {
@@ -49,6 +50,9 @@ const PomodoroTimer = ({
           onClick={onToggle}
         >
           {isRunning ? 'STOP' : 'START'}
+        </button>
+        <button type="button" className="pomodoro-restart" onClick={onRestart} aria-label="Restart timer">
+          ↻
         </button>
       </div>
     </div>

@@ -93,6 +93,7 @@
 .timer-actions {
   display: flex;
   justify-content: center;
+  gap: 0.5rem;
 }
 
 .pomodoro-cta {
@@ -107,6 +108,15 @@
 
 .pomodoro-cta.stop {
   background: #dc2626;
+}
+
+.pomodoro-restart {
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  background: #fff;
+  font-size: 1.1rem;
 }
 
 .pomodoro-modal {

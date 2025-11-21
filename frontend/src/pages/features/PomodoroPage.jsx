@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 import PomodoroTimer from '../../components/Pomodoro/PomodoroTimer.jsx';
 import PomodoroSettings from '../../components/Pomodoro/PomodoroSettings.jsx';
+import ReportCards from '../../components/Pomodoro/ReportCards.jsx';
 import '../../styles/Pomodoro.css';
 
 const DEFAULT_SETTINGS = {
@@ -12,6 +13,43 @@ const DEFAULT_SETTINGS = {
   long_break_minutes: 15,
   long_break_after_sessions: 2,
   play_sound: true,
+};
+
+const sum = (arr) => arr.reduce((acc, v) => acc + v, 0);
+const dayKey = (dateStr) => new Date(dateStr).toISOString().slice(0, 10);
+
+const computeStreaks = (datesSet) => {
+  const today = new Date();
+  const todayKey = today.toISOString().slice(0, 10);
+  let current = 0;
+  let cursor = new Date(today);
+  while (datesSet.has(cursor.toISOString().slice(0, 10))) {
+    current += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  const sortedKeys = Array.from(datesSet).sort();
+  let best = 0;
+  let run = 0;
+  let prev = null;
+  sortedKeys.forEach((d) => {
+    if (!prev) {
+      run = 1;
+    } else {
+      const prevDate = new Date(prev);
+      prevDate.setDate(prevDate.getDate() + 1);
+      const expected = prevDate.toISOString().slice(0, 10);
+      if (expected === d) {
+        run += 1;
+      } else {
+        run = 1;
+      }
+    }
+    prev = d;
+    if (run > best) best = run;
+  });
+
+  return { current, best };
 };
 
 const modeToSeconds = (mode, settings) => {
@@ -36,6 +74,10 @@ const PomodoroPage = () => {
   const [sessionsSinceLong, setSessionsSinceLong] = useState(0);
   const [sessionStart, setSessionStart] = useState(null);
   const [error, setError] = useState(null);
+  const [showReport, setShowReport] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState(null);
+  const [reportSessions, setReportSessions] = useState([]);
   const timerRef = useRef(null);
 
   const isPremium = Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
@@ -181,6 +223,13 @@ const PomodoroPage = () => {
     setSessionStart(null);
   };
 
+  const handleRestart = () => {
+    const fresh = modeToSeconds(mode, settings);
+    setSecondsLeft(fresh);
+    setSessionStart(new Date().toISOString());
+    // keep current running state; if stopped, remain stopped
+  };
+
   const handleSaveSettings = async (nextSettings) => {
     setSettingsSaving(true);
     try {
@@ -205,6 +254,31 @@ const PomodoroPage = () => {
     }
   };
 
+  // Fetch report data when modal opens (only for premium)
+  useEffect(() => {
+    const fetchReport = async () => {
+      if (!showReport || !isPremium) return;
+      setReportLoading(true);
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('pomodoro_sessions')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('mode', 'pomodoro')
+          .eq('completed', true);
+        if (fetchError) throw fetchError;
+        setReportSessions(data || []);
+        setReportError(null);
+      } catch (err) {
+        console.error(err);
+        setReportError('Unable to load report');
+      } finally {
+        setReportLoading(false);
+      }
+    };
+    fetchReport();
+  }, [showReport, isPremium, user]);
+
   if (authLoading || profileLoading) {
     return <LoadingSpinner label="Loading Pomodoro…" />;
   }
@@ -218,7 +292,7 @@ const PomodoroPage = () => {
       <div className="pomodoro-topbar">
         <h1>Pomodoro</h1>
         <div className="pomodoro-top-actions">
-          <button type="button" className="pomodoro-btn ghost" onClick={() => (window.location.href = '/pomodoro/report')}>
+          <button type="button" className="pomodoro-btn ghost" onClick={() => setShowReport(true)}>
             Report
           </button>
           <button type="button" className="pomodoro-btn primary" onClick={() => setSettingsOpen(true)}>
@@ -227,7 +301,14 @@ const PomodoroPage = () => {
         </div>
       </div>
       {error && <p className="pomodoro-error">{error}</p>}
-      <PomodoroTimer mode={mode} secondsLeft={secondsLeft} isRunning={isRunning} onToggle={handleToggle} onSelectMode={handleModeSelect} />
+      <PomodoroTimer
+        mode={mode}
+        secondsLeft={secondsLeft}
+        isRunning={isRunning}
+        onToggle={handleToggle}
+        onRestart={handleRestart}
+        onSelectMode={handleModeSelect}
+      />
       <PomodoroSettings
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
@@ -235,7 +316,75 @@ const PomodoroPage = () => {
         onSave={handleSaveSettings}
         saving={settingsSaving}
       />
+      {showReport && (
+        <PomodoroReportModal
+          onClose={() => setShowReport(false)}
+          isPremium={isPremium}
+          loading={reportLoading}
+          error={reportError}
+          sessions={reportSessions}
+        />
+      )}
     </section>
+  );
+};
+
+const PomodoroReportModal = ({ onClose, isPremium, loading, error, sessions }) => {
+  const totals = {
+    focusSeconds: sum((sessions || []).map((s) => s.duration_seconds || 0)),
+  };
+  const averages = (() => {
+    if (!sessions?.length) return { daily: 0, weekly: 0, monthly: 0, yearly: 0 };
+    const byDay = new Map();
+    sessions.forEach((s) => {
+      const key = dayKey(s.ended_at);
+      byDay.set(key, (byDay.get(key) || 0) + (s.duration_seconds || 0));
+    });
+    const days = byDay.size || 1;
+    const weeks = Math.max(1, days / 7);
+    const months = Math.max(1, days / 30);
+    const years = Math.max(1, days / 365);
+    const total = totals.focusSeconds;
+    return {
+      daily: total / days,
+      weekly: total / weeks,
+      monthly: total / months,
+      yearly: total / years,
+    };
+  })();
+  const streaks = (() => {
+    const dateSet = new Set((sessions || []).map((s) => dayKey(s.ended_at)));
+    return computeStreaks(dateSet);
+  })();
+
+  const startUpgrade = () => {
+    window.location.href = '/upgrade';
+  };
+
+  return (
+    <div className="pomodoro-modal" role="dialog" aria-modal="true">
+      <div className="pomodoro-modal-content">
+        <div className="pomodoro-modal-header">
+          <h2>Report</h2>
+          <button type="button" onClick={onClose} className="pomodoro-close">✕</button>
+        </div>
+        {!isPremium ? (
+          <div className="pomodoro-report-upgrade">
+            <p>Detailed reports are a premium feature. Upgrade to unlock.</p>
+            <button type="button" className="pomodoro-btn primary" onClick={startUpgrade}>
+              Upgrade to Premium
+            </button>
+          </div>
+        ) : loading ? (
+          <LoadingSpinner label="Loading report…" />
+        ) : (
+          <>
+            {error && <p className="pomodoro-error">{error}</p>}
+            <ReportCards totals={totals} averages={averages} streaks={streaks} />
+          </>
+        )}
+      </div>
+    </div>
   );
 };
 
