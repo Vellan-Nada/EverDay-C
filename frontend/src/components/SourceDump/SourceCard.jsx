@@ -50,11 +50,17 @@ const SourceCard = ({ card, isPremium, onChangeColor, onClick }) => {
   };
 
   return (
-    <article className="sd-card" style={{ background: bg }}>
+    <article
+      className="sd-card"
+      style={{ background: bg }}
+      onClick={() => onClick?.(card)}
+      role="button"
+      tabIndex={0}
+    >
       <div className="sd-card-header">
         <h3 title={card.title}>{card.title}</h3>
       </div>
-      <div className="sd-card-body" onClick={() => onClick?.(card)} role="button" tabIndex={0}>
+      <div className="sd-card-body">
         {links.length > 0 && (
           <div className="sd-section">
             <strong>Links</strong>
