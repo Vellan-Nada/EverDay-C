@@ -37,8 +37,10 @@ const JournalPage = () => {
     const fetchEntries = async () => {
       setLoading(true);
       try {
-        const start = `${year}-${String(month + 1).padStart(2, '0')}-01`;
-        const end = `${year}-${String(month + 1).padStart(2, '0')}-31`;
+        const startDate = new Date(year, month, 1);
+        const endDate = new Date(year, month + 1, 0); // last day of month
+        const start = startDate.toISOString().slice(0, 10);
+        const end = endDate.toISOString().slice(0, 10);
         const { data, error: fetchError } = await supabase
           .from('journal_entries')
           .select('*')
@@ -116,7 +118,7 @@ const JournalPage = () => {
       setEntries(data || entries); // sync if needed
     } catch (err) {
       console.error(err);
-      setReportError('Unable to load report.');
+      setReportError(err.message || 'Unable to load report.');
     } finally {
       setReportLoading(false);
     }
