@@ -142,17 +142,6 @@ const ReadingList = () => {
           <p className="reading-subtitle">Track books across your journey.</p>
           <h1>Reading List</h1>
         </div>
-        <div className="reading-actions">
-          <button type="button" className="reading-btn primary" onClick={() => openCreate('want_to_read')}>
-            + {STATUS_LABELS.want_to_read}
-          </button>
-          <button type="button" className="reading-btn primary" onClick={() => openCreate('reading')}>
-            + {STATUS_LABELS.reading}
-          </button>
-          <button type="button" className="reading-btn primary" onClick={() => openCreate('finished')}>
-            + {STATUS_LABELS.finished}
-          </button>
-        </div>
       </header>
 
       {error && <p className="reading-error">{error}</p>}
@@ -168,6 +157,7 @@ const ReadingList = () => {
             onEdit={openEdit}
             onDelete={handleDelete}
             onMove={handleMove}
+            onAdd={openCreate}
             isPremium={isPremium}
           />
           <StatusColumn
@@ -177,6 +167,7 @@ const ReadingList = () => {
             onEdit={openEdit}
             onDelete={handleDelete}
             onMove={handleMove}
+            onAdd={openCreate}
             isPremium={isPremium}
           />
           <StatusColumn
@@ -186,6 +177,7 @@ const ReadingList = () => {
             onEdit={openEdit}
             onDelete={handleDelete}
             onMove={handleMove}
+            onAdd={openCreate}
             isPremium={isPremium}
           />
         </div>

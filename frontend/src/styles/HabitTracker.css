@@ -73,12 +73,34 @@
   overflow: hidden;
 }
 
-.habit-table-scroller {
+.dual-table {
+  display: flex;
+}
+
+.habit-table-fixed {
+  flex: 0 0 auto;
+  border-right: 1px solid var(--border);
+}
+
+.habit-table-fixed .habit-table {
+  min-width: 420px;
+}
+
+.habit-table-dates {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.habit-date-scroller {
   overflow-x: auto;
 }
 
+.habit-table-dates .habit-table {
+  min-width: 100%;
+}
+
 .habit-table {
-  width: 100%;
+  width: auto;
   border-collapse: collapse;
   min-width: 640px;
 }

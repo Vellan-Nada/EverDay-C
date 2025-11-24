@@ -61,7 +61,20 @@
 }
 
 .reading-column-header h3 {
-  margin: 0 0 0.5rem;
+  margin: 0;
+}
+
+.reading-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.reading-btn.small {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.9rem;
 }
 
 .reading-list {
