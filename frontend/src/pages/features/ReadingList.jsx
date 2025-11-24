@@ -122,6 +122,21 @@ const ReadingList = () => {
     setItems((prev) => prev.map((i) => (i.id === item.id ? data : i)));
   };
 
+  const handleColor = async (item, color) => {
+    if (!isPremium) return;
+    const { data, error: updateError } = await supabase
+      .from('reading_list_items')
+      .update({ background_color: color })
+      .eq('id', item.id)
+      .select()
+      .single();
+    if (updateError) {
+      alert('Unable to update color.');
+      return;
+    }
+    setItems((prev) => prev.map((i) => (i.id === item.id ? data : i)));
+  };
+
   const handleSaveWrapper = async (formValues) => {
     try {
       await handleSave(formValues);
@@ -158,6 +173,7 @@ const ReadingList = () => {
             onDelete={handleDelete}
             onMove={handleMove}
             onAdd={openCreate}
+            onChangeColor={handleColor}
             isPremium={isPremium}
           />
           <StatusColumn
@@ -168,6 +184,7 @@ const ReadingList = () => {
             onDelete={handleDelete}
             onMove={handleMove}
             onAdd={openCreate}
+            onChangeColor={handleColor}
             isPremium={isPremium}
           />
           <StatusColumn
@@ -178,6 +195,7 @@ const ReadingList = () => {
             onDelete={handleDelete}
             onMove={handleMove}
             onAdd={openCreate}
+            onChangeColor={handleColor}
             isPremium={isPremium}
           />
         </div>

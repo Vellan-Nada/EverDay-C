@@ -5,7 +5,6 @@ const DEFAULT_FORM = {
   author: '',
   notes: '',
   status: 'want_to_read',
-  background_color: '',
 };
 
 const BookFormModal = ({ isOpen, mode, initialValues, defaultStatus, isPremium, onClose, onSave }) => {
@@ -39,7 +38,6 @@ const BookFormModal = ({ isOpen, mode, initialValues, defaultStatus, isPremium, 
       author: form.author || null,
       notes: form.notes || null,
       status: form.status,
-      background_color: isPremium ? form.background_color || null : null,
     });
   };
 
@@ -71,21 +69,6 @@ const BookFormModal = ({ isOpen, mode, initialValues, defaultStatus, isPremium, 
               <option value="finished">Books have been read</option>
             </select>
           </label>
-          {isPremium ? (
-            <label>
-              <span>Background color</span>
-              <input
-                type="color"
-                value={form.background_color || '#ffffff'}
-                onChange={(e) => handleChange('background_color', e.target.value)}
-              />
-            </label>
-          ) : (
-            <div className="reading-locked">
-              <p>Background color customization is a premium feature.</p>
-              <button type="button" className="reading-btn ghost" onClick={() => alert('Upgrade coming soon.')}>Upgrade</button>
-            </div>
-          )}
         </div>
         {error && <p className="reading-error">{error}</p>}
         <div className="reading-modal-actions">

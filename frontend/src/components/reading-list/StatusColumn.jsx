@@ -4,9 +4,8 @@ const StatusColumn = ({ title, statusId, items, onEdit, onDelete, onMove, onAdd,
   return (
     <div className="reading-column">
       <div className="reading-column-header">
-        <h3>{title}</h3>
-        <button type="button" className="reading-btn primary small" onClick={() => onAdd(statusId)}>
-          + Add
+        <button type="button" className="reading-btn primary full" onClick={() => onAdd(statusId)}>
+          + {title}
         </button>
       </div>
       {items.length === 0 ? (

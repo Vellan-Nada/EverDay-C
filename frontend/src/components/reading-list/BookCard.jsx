@@ -6,10 +6,23 @@ const STATUS_OPTIONS = [
   { id: 'finished', label: 'Move to: Books have been read' },
 ];
 
-const BookCard = ({ item, isPremium, onEdit, onDelete, onMove }) => {
+const COLOR_PRESETS = ['#fff7ed', '#eef2ff', '#ecfeff', '#f1f5f9', '#fef9c3', '#e0f2fe'];
+
+const BookCard = ({ item, isPremium, onEdit, onDelete, onMove, onChangeColor }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [colorOpen, setColorOpen] = useState(false);
+  const [lockedMessage, setLockedMessage] = useState(false);
 
   const bg = isPremium && item.background_color ? item.background_color : '#fff';
+
+  const handleColorClick = () => {
+    if (!isPremium) {
+      setLockedMessage(true);
+      setTimeout(() => setLockedMessage(false), 1800);
+      return;
+    }
+    setColorOpen((prev) => !prev);
+  };
 
   return (
     <article className="reading-card" style={{ background: bg }}>
@@ -26,6 +39,35 @@ const BookCard = ({ item, isPremium, onEdit, onDelete, onMove }) => {
           <button type="button" className="reading-btn danger" onClick={() => onDelete(item)}>
             Delete
           </button>
+          <button type="button" className="reading-color" aria-label="Change color" onClick={handleColorClick}>
+            ●
+          </button>
+          {colorOpen && isPremium && (
+            <div className="reading-color-menu">
+              {COLOR_PRESETS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  style={{ background: c }}
+                  onClick={() => {
+                    onChangeColor(item, c);
+                    setColorOpen(false);
+                  }}
+                  aria-label={`Set color ${c}`}
+                />
+              ))}
+              <button
+                type="button"
+                style={{ background: '#fff', border: '1px solid var(--border)' }}
+                onClick={() => {
+                  onChangeColor(item, null);
+                  setColorOpen(false);
+                }}
+                aria-label="Reset color"
+              />
+            </div>
+          )}
+          {lockedMessage && <div className="reading-locked small">Premium feature</div>}
         </div>
         <div className="reading-move">
           <button type="button" className="reading-btn ghost" onClick={() => setMenuOpen((p) => !p)} aria-label="Move item">
