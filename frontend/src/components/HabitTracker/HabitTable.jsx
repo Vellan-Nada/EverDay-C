@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from 'react';
 import HabitRow from './HabitRow.jsx';
 
 const HabitTable = ({
@@ -18,14 +19,31 @@ const HabitTable = ({
     );
   }
 
-  // Set a dynamic table width so horizontal scrolling appears when many date columns exist
-  const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
-  const computedWidth = Math.max(1600, viewportWidth + 400, 900 + dates.length * 180);
-  const tableStyle = { minWidth: `${computedWidth}px` };
+  const scrollerRef = useRef(null);
+  const [tableWidth, setTableWidth] = useState(1200);
+
+  // Measure available width (content area) and force slight overflow so horizontal scroll stays inside the table
+  useLayoutEffect(() => {
+    const measure = () => {
+      const scroller = scrollerRef.current;
+      if (!scroller) return;
+      const available = scroller.clientWidth || 0;
+      const perDate = 120;
+      const base = 600; // rough width for non-date columns
+      const needed = base + dates.length * perDate;
+      const target = Math.max(needed, available + 100, 1000);
+      setTableWidth(target);
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [dates.length]);
+
+  const tableStyle = { minWidth: `${tableWidth}px` };
 
   return (
     <div className="habit-table-wrapper">
-      <div className="habit-table-scroller">
+      <div className="habit-table-scroller" ref={scrollerRef}>
         <table className="habit-table mobile-table" style={tableStyle}>
           <thead>
             <tr>

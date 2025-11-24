@@ -81,13 +81,15 @@
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   width: 100%;
+  max-width: 100%;
   display: block;
+  padding-bottom: 0.35rem;
 }
 
 .habit-table {
   width: max-content;
   border-collapse: collapse;
-  min-width: 1800px;
+  min-width: 1000px; /* fallback; JS will set a larger min-width inline */
 }
 
 .habit-table.mobile-table {
