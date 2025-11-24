@@ -1,4 +1,5 @@
 import HabitRow from './HabitRow.jsx';
+import { useEffect, useRef } from 'react';
 
 const HabitTable = ({
   habits,
@@ -10,6 +11,20 @@ const HabitTable = ({
   onEditHabit,
   onDeleteHabit,
 }) => {
+  const fixedRowRefs = useRef([]);
+  const dateRowRefs = useRef([]);
+
+  useEffect(() => {
+    habits.forEach((_, idx) => {
+      const fixedRow = fixedRowRefs.current[idx];
+      const dateRow = dateRowRefs.current[idx];
+      if (fixedRow && dateRow) {
+        const h = fixedRow.getBoundingClientRect().height;
+        dateRow.style.height = `${h}px`;
+      }
+    });
+  }, [habits, dates]);
+
   if (!habits.length) {
     return (
       <div className="habit-empty">
@@ -35,6 +50,7 @@ const HabitTable = ({
             {habits.map((habit, index) => (
               <HabitRow
                 key={`fixed-${habit.id}`}
+                rowRef={(el) => (fixedRowRefs.current[index] = el)}
                 mode="fixed"
                 index={index}
                 habit={habit}
@@ -66,6 +82,7 @@ const HabitTable = ({
               {habits.map((habit, index) => (
                 <HabitRow
                   key={`dates-${habit.id}`}
+                  rowRef={(el) => (dateRowRefs.current[index] = el)}
                   mode="dates"
                   index={index}
                   habit={habit}

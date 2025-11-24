@@ -10,6 +10,7 @@ const HabitRow = ({
   onEdit,
   onDelete,
   mode = 'full', // full | fixed | dates
+  rowRef,
 }) => {
   const renderFixedCols = () => (
     <>
@@ -94,16 +95,16 @@ const HabitRow = ({
     });
 
   if (mode === 'fixed') {
-    return <tr>{renderFixedCols()}</tr>;
+    return <tr ref={rowRef}>{renderFixedCols()}</tr>;
   }
 
   if (mode === 'dates') {
-    return <tr>{renderDateCols()}</tr>;
+    return <tr ref={rowRef}>{renderDateCols()}</tr>;
   }
 
   // Default: full row
   return (
-    <tr>
+    <tr ref={rowRef}>
       {renderFixedCols()}
       {renderDateCols()}
     </tr>
