@@ -72,17 +72,19 @@
   border: 1px solid var(--border);
   overflow: hidden;
   width: 100%;
+  max-width: 100%;
 }
 
 .habit-table-scroller {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   width: 100%;
+  padding-bottom: 0.35rem;
 }
 
 .habit-table {
   width: max-content;
-  min-width: 100%;
+  min-width: 1200px;
   border-collapse: collapse;
   min-width: 640px;
 }
