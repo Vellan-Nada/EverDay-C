@@ -127,17 +127,6 @@
   text-align: center;
 }
 
-/* Prevent header labels like Icon/Streak from squishing */
-.habit-table th.icon-col,
-.habit-table td.icon-col {
-  min-width: 80px;
-}
-
-.habit-table th.streak-col,
-.habit-table td.streak-col {
-  min-width: 90px;
-}
-
 .habit-table tbody tr:hover {
   background: rgba(15, 23, 42, 0.02);
 }

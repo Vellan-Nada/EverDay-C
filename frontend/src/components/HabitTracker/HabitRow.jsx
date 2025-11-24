@@ -14,8 +14,8 @@ const HabitRow = ({
 }) => {
   const renderFixedCols = () => (
     <>
-      <td className="sticky-col">{index + 1}</td>
-      <td className="sticky-col habit-col">
+      <td>{index + 1}</td>
+      <td className="habit-col">
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <strong>{habit.name}</strong>
           {habit.lastCompleted && (
@@ -25,7 +25,7 @@ const HabitRow = ({
           )}
         </div>
       </td>
-      <td className="sticky-col actions-col">
+      <td className="actions-col">
         <div className="habit-row-actions">
           <button type="button" onClick={() => onEdit(habit)}>
             Edit
@@ -36,12 +36,12 @@ const HabitRow = ({
         </div>
       </td>
       {showIcons && (
-        <td className="sticky-col icon-col">
+        <td className="icon-col">
           <span className="habit-icon">{getIconSymbol(habit.icon_key) || '📌'}</span>
         </td>
       )}
       {showStreak && (
-        <td className="sticky-col streak-col">
+        <td className="streak-col">
           <span title={`Current: ${habit.currentStreak} • Best: ${habit.best_streak}`}>
             {habit.currentStreak}-day
           </span>
