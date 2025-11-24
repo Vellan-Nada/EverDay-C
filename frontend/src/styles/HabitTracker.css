@@ -77,6 +77,11 @@
   display: flex;
 }
 
+.habit-table-scroller.mobile {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .habit-table-fixed {
   flex: 0 0 auto;
   border-right: 1px solid var(--border);
@@ -117,11 +122,11 @@
 }
 
 @media (max-width: 640px) {
-  .habit-table-dates .habit-table {
-    min-width: 150%;
+  .dual-table {
+    display: none;
   }
-  .habit-date-scroller {
-    padding-bottom: 0.5rem;
+  .habit-table {
+    min-width: 900px;
   }
 }
 
