@@ -40,7 +40,7 @@
 .panelBody {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
 }
 
 .mobileToggle {
