@@ -71,15 +71,18 @@
   border-radius: var(--radius);
   border: 1px solid var(--border);
   overflow: hidden;
+  width: 100%;
 }
 
 .habit-table-scroller {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  width: 100%;
 }
 
 .habit-table {
-  width: auto;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
   min-width: 640px;
 }
