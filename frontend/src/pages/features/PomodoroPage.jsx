@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
@@ -63,16 +63,41 @@ const modeToSeconds = (mode, settings) => {
   }
 };
 
+const getStoredTimerState = () => {
+  try {
+    const raw = localStorage.getItem('everday_pomodoro_state');
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    const remaining = parsed.endTime
+      ? Math.max(0, Math.floor((parsed.endTime - Date.now()) / 1000))
+      : parsed.secondsLeft;
+    return {
+      mode: parsed.mode,
+      secondsLeft: remaining,
+      isRunning: parsed.isRunning,
+      sessionStart: parsed.sessionStart,
+      endTime: parsed.endTime,
+    };
+  } catch (err) {
+    return {};
+  }
+};
+
 const PomodoroPage = () => {
   const { user, profile, authLoading, profileLoading } = useAuth();
+  const stored = useRef(getStoredTimerState()).current;
+  const [hydrated, setHydrated] = useState(false);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
-  const [mode, setMode] = useState('pomodoro');
-  const [secondsLeft, setSecondsLeft] = useState(DEFAULT_SETTINGS.pomodoro_minutes * 60);
-  const [isRunning, setIsRunning] = useState(false);
+  const [mode, setMode] = useState(stored.mode || 'pomodoro');
+  const [secondsLeft, setSecondsLeft] = useState(
+    stored.secondsLeft !== undefined ? stored.secondsLeft : DEFAULT_SETTINGS.pomodoro_minutes * 60
+  );
+  const [isRunning, setIsRunning] = useState(Boolean(stored.isRunning));
   const [sessionsSinceLong, setSessionsSinceLong] = useState(0);
-  const [sessionStart, setSessionStart] = useState(null);
+  const [sessionStart, setSessionStart] = useState(stored.sessionStart || null);
+  const [endTime, setEndTime] = useState(stored.endTime || null);
   const [error, setError] = useState(null);
   const [showReport, setShowReport] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
@@ -102,10 +127,14 @@ const PomodoroPage = () => {
             .single();
           if (insertError) throw insertError;
           setSettings(inserted);
-          setSecondsLeft(modeToSeconds('pomodoro', inserted));
+          if (!stored.isRunning) {
+            setSecondsLeft(modeToSeconds(mode, inserted));
+          }
         } else {
           setSettings({ ...DEFAULT_SETTINGS, ...data });
-          setSecondsLeft(modeToSeconds('pomodoro', { ...DEFAULT_SETTINGS, ...data }));
+          if (!stored.isRunning) {
+            setSecondsLeft(modeToSeconds(mode, { ...DEFAULT_SETTINGS, ...data }));
+          }
         }
       } catch (err) {
         console.error(err);
@@ -113,9 +142,38 @@ const PomodoroPage = () => {
       }
     };
     loadSettings();
-  }, [authLoading, user]);
+  }, [authLoading, user, mode, stored.isRunning]);
 
-  // Timer tick logic
+  // Restore from localStorage if a session was active (so timer keeps going across pages/tabs)
+  useLayoutEffect(() => {
+    if (stored.isRunning) {
+      if (stored.endTime) {
+        const remaining = Math.max(0, Math.floor((stored.endTime - Date.now()) / 1000));
+        setSecondsLeft(remaining);
+        setEndTime(stored.endTime);
+      } else if (stored.secondsLeft !== undefined) {
+        setSecondsLeft(stored.secondsLeft);
+        setEndTime(Date.now() + stored.secondsLeft * 1000);
+      }
+    }
+    setHydrated(true);
+  }, [stored.endTime, stored.isRunning, stored.secondsLeft]);
+
+  // Persist state so navigation/tab changes keep timer state
+  useEffect(() => {
+    localStorage.setItem(
+      'everday_pomodoro_state',
+      JSON.stringify({
+        mode,
+        secondsLeft,
+        isRunning,
+        sessionStart,
+        endTime,
+      })
+    );
+  }, [mode, secondsLeft, isRunning, sessionStart, endTime]);
+
+  // Timer tick logic using absolute endTime so it survives throttling/background
   useEffect(() => {
     if (!isRunning) {
       if (timerRef.current) {
@@ -127,13 +185,14 @@ const PomodoroPage = () => {
 
     timerRef.current = setInterval(() => {
       setSecondsLeft((prev) => {
-        if (prev <= 1) {
+        const remaining = endTime ? Math.max(0, Math.floor((endTime - Date.now()) / 1000)) : prev - 1;
+        if (remaining <= 0) {
           clearInterval(timerRef.current);
           timerRef.current = null;
           handleCompletion();
           return 0;
         }
-        return prev - 1;
+        return remaining;
       });
     }, 1000);
 
@@ -144,7 +203,7 @@ const PomodoroPage = () => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRunning]);
+  }, [isRunning, endTime]);
 
   // Handle timer reaching zero and auto-cycle
   const handleCompletion = async () => {
@@ -179,6 +238,7 @@ const PomodoroPage = () => {
       setSecondsLeft(modeToSeconds('short_break', settings));
       setIsRunning(true);
       setSessionStart(new Date().toISOString());
+      setEndTime(Date.now() + modeToSeconds('short_break', settings) * 1000);
     } else if (mode === 'short_break') {
       const nextCount = sessionsSinceLong + 1;
       setSessionsSinceLong(nextCount);
@@ -188,12 +248,14 @@ const PomodoroPage = () => {
         setSecondsLeft(modeToSeconds('pomodoro', settings));
         setIsRunning(false);
         setSessionStart(null);
+        setEndTime(null);
       } else {
         // go to long break, auto start
         setMode('long_break');
         setSecondsLeft(modeToSeconds('long_break', settings));
         setIsRunning(true);
         setSessionStart(new Date().toISOString());
+        setEndTime(Date.now() + modeToSeconds('long_break', settings) * 1000);
       }
     } else if (mode === 'long_break') {
       setSessionsSinceLong(0);
@@ -201,6 +263,7 @@ const PomodoroPage = () => {
       setSecondsLeft(modeToSeconds('pomodoro', settings));
       setIsRunning(false);
       setSessionStart(null);
+      setEndTime(null);
     }
   };
 
@@ -209,10 +272,13 @@ const PomodoroPage = () => {
       if (secondsLeft === 0) {
         setSecondsLeft(modeToSeconds(mode, settings));
       }
-      setSessionStart(new Date().toISOString());
+      const nowIso = new Date().toISOString();
+      setSessionStart(nowIso);
+      setEndTime(Date.now() + secondsLeft * 1000);
       setIsRunning(true);
     } else {
       setIsRunning(false);
+      setEndTime(null);
     }
   };
 
@@ -221,12 +287,19 @@ const PomodoroPage = () => {
     setMode(nextMode);
     setSecondsLeft(modeToSeconds(nextMode, settings));
     setSessionStart(null);
+    setEndTime(null);
   };
 
   const handleRestart = () => {
     const fresh = modeToSeconds(mode, settings);
     setSecondsLeft(fresh);
-    setSessionStart(new Date().toISOString());
+    const now = new Date().toISOString();
+    setSessionStart(now);
+    if (isRunning) {
+      setEndTime(Date.now() + fresh * 1000);
+    } else {
+      setEndTime(null);
+    }
     // keep current running state; if stopped, remain stopped
   };
 
@@ -279,7 +352,7 @@ const PomodoroPage = () => {
     fetchReport();
   }, [showReport, isPremium, user]);
 
-  if (authLoading || profileLoading) {
+  if (authLoading || profileLoading || !hydrated) {
     return <LoadingSpinner label="Loading Pomodoro…" />;
   }
 
