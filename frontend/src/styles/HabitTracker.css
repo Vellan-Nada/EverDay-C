@@ -2,8 +2,10 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
 }
-
 .habit-header {
   display: flex;
   align-items: center;
@@ -89,7 +91,7 @@
 .habit-table {
   width: max-content;
   border-collapse: collapse;
-  min-width: 1000px; /* fallback; JS will set a larger min-width inline */
+  min-width: 850px; /* fallback; JS will set a larger min-width inline */
 }
 
 .habit-table.mobile-table {

@@ -28,10 +28,10 @@ const HabitTable = ({
       const scroller = scrollerRef.current;
       if (!scroller) return;
       const available = scroller.clientWidth || 0;
-      const perDate = 120;
-      const base = 600; // rough width for non-date columns
+      const perDate = 110;
+      const base = 480; // rough width for non-date columns
       const needed = base + dates.length * perDate;
-      const target = Math.max(needed, available + 100, 1000);
+      const target = Math.max(needed, available + 25, 900);
       setTableWidth(target);
     };
     measure();
