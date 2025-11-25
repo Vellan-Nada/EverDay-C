@@ -63,23 +63,23 @@ const modeToSeconds = (mode, settings) => {
   }
 };
 
+// Per-mode timer state
 const getStoredTimerState = () => {
   try {
     const raw = localStorage.getItem('everday_pomodoro_state');
-    if (!raw) return {};
+    if (!raw) return { hasState: false, slots: {} };
     const parsed = JSON.parse(raw);
-    const remaining = parsed.endTime
-      ? Math.max(0, Math.floor((parsed.endTime - Date.now()) / 1000))
-      : parsed.secondsLeft;
-    return {
-      mode: parsed.mode,
-      secondsLeft: remaining,
-      isRunning: parsed.isRunning,
-      sessionStart: parsed.sessionStart,
-      endTime: parsed.endTime,
-    };
+    const slots = parsed.slots || {};
+    // normalize remaining for each slot
+    Object.keys(slots).forEach((key) => {
+      const slot = slots[key];
+      if (slot.endTime) {
+        slot.secondsLeft = Math.max(0, Math.floor((slot.endTime - Date.now()) / 1000));
+      }
+    });
+    return { hasState: true, slots, activeMode: parsed.activeMode || 'pomodoro' };
   } catch (err) {
-    return {};
+    return { hasState: false, slots: {} };
   }
 };
 
@@ -90,14 +90,19 @@ const PomodoroPage = () => {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
-  const [mode, setMode] = useState(stored.mode || 'pomodoro');
-  const [secondsLeft, setSecondsLeft] = useState(
-    stored.secondsLeft !== undefined ? stored.secondsLeft : DEFAULT_SETTINGS.pomodoro_minutes * 60
-  );
-  const [isRunning, setIsRunning] = useState(Boolean(stored.isRunning));
+  const [mode, setMode] = useState(stored.activeMode || 'pomodoro');
+  const [secondsLeft, setSecondsLeft] = useState(() => {
+    const slot = stored.slots[stored.activeMode || 'pomodoro'];
+    if (slot && slot.secondsLeft !== undefined) return slot.secondsLeft;
+    return DEFAULT_SETTINGS.pomodoro_minutes * 60;
+  });
+  const [isRunning, setIsRunning] = useState(() => {
+    const slot = stored.slots[stored.activeMode || 'pomodoro'];
+    return Boolean(slot?.isRunning);
+  });
   const [sessionsSinceLong, setSessionsSinceLong] = useState(0);
-  const [sessionStart, setSessionStart] = useState(stored.sessionStart || null);
-  const [endTime, setEndTime] = useState(stored.endTime || null);
+  const [sessionStart, setSessionStart] = useState(() => stored.slots[stored.activeMode || 'pomodoro']?.sessionStart || null);
+  const [endTime, setEndTime] = useState(() => stored.slots[stored.activeMode || 'pomodoro']?.endTime || null);
   const [error, setError] = useState(null);
   const [showReport, setShowReport] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
@@ -106,6 +111,11 @@ const PomodoroPage = () => {
   const timerRef = useRef(null);
 
   const isPremium = Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
+
+  // Always derive what should be shown right now; avoids flashing default durations.
+  const displaySeconds = endTime
+    ? Math.max(0, Math.floor((endTime - Date.now()) / 1000))
+    : secondsLeft;
 
   // Fetch or initialize settings
   useEffect(() => {
@@ -127,12 +137,12 @@ const PomodoroPage = () => {
             .single();
           if (insertError) throw insertError;
           setSettings(inserted);
-          if (!stored.isRunning) {
+          if (!stored.hasState || !stored.isRunning) {
             setSecondsLeft(modeToSeconds(mode, inserted));
           }
         } else {
           setSettings({ ...DEFAULT_SETTINGS, ...data });
-          if (!stored.isRunning) {
+          if (!stored.hasState || !stored.isRunning) {
             setSecondsLeft(modeToSeconds(mode, { ...DEFAULT_SETTINGS, ...data }));
           }
         }
@@ -146,31 +156,44 @@ const PomodoroPage = () => {
 
   // Restore from localStorage if a session was active (so timer keeps going across pages/tabs)
   useLayoutEffect(() => {
-    if (stored.isRunning) {
-      if (stored.endTime) {
-        const remaining = Math.max(0, Math.floor((stored.endTime - Date.now()) / 1000));
+    const slot = stored.slots[stored.activeMode || 'pomodoro'];
+    if (slot) {
+      if (slot.endTime) {
+        const remaining = Math.max(0, Math.floor((slot.endTime - Date.now()) / 1000));
         setSecondsLeft(remaining);
-        setEndTime(stored.endTime);
-      } else if (stored.secondsLeft !== undefined) {
-        setSecondsLeft(stored.secondsLeft);
-        setEndTime(Date.now() + stored.secondsLeft * 1000);
+        setEndTime(slot.endTime);
+        setIsRunning(Boolean(slot.isRunning));
+        setSessionStart(slot.sessionStart || null);
+      } else if (slot.secondsLeft !== undefined) {
+        setSecondsLeft(slot.secondsLeft);
+        setIsRunning(Boolean(slot.isRunning));
+        setSessionStart(slot.sessionStart || null);
+        setEndTime(null);
       }
     }
     setHydrated(true);
-  }, [stored.endTime, stored.isRunning, stored.secondsLeft]);
+  }, [stored]);
+
+  const persistSlot = (modeKey, data) => {
+    const raw = localStorage.getItem('everday_pomodoro_state');
+    let next = { slots: {}, activeMode: mode };
+    try {
+      if (raw) next = JSON.parse(raw) || {};
+    } catch (err) {
+      next = { slots: {}, activeMode: mode };
+    }
+    if (!next.slots) next.slots = {};
+    next.slots[modeKey] = {
+      ...next.slots[modeKey],
+      ...data,
+    };
+    next.activeMode = mode;
+    localStorage.setItem('everday_pomodoro_state', JSON.stringify(next));
+  };
 
   // Persist state so navigation/tab changes keep timer state
   useEffect(() => {
-    localStorage.setItem(
-      'everday_pomodoro_state',
-      JSON.stringify({
-        mode,
-        secondsLeft,
-        isRunning,
-        sessionStart,
-        endTime,
-      })
-    );
+    persistSlot(mode, { secondsLeft, isRunning, sessionStart, endTime });
   }, [mode, secondsLeft, isRunning, sessionStart, endTime]);
 
   // Timer tick logic using absolute endTime so it survives throttling/background
@@ -283,11 +306,32 @@ const PomodoroPage = () => {
   };
 
   const handleModeSelect = (nextMode) => {
-    setIsRunning(false);
+    if (nextMode === mode) return; // no-op if selecting the same mode
+    // Save current mode state
+    persistSlot(mode, {
+      secondsLeft: displaySeconds,
+      isRunning: false,
+      sessionStart,
+      endTime: null,
+    });
+
+    const slot = stored.slots[nextMode];
+    const fresh = modeToSeconds(nextMode, settings);
+    let nextSeconds = fresh;
+    let nextRunning = false;
+    let nextEndTime = null;
+    let nextStart = null;
+    if (slot) {
+      nextSeconds = slot.secondsLeft !== undefined ? slot.secondsLeft : fresh;
+      nextRunning = Boolean(slot.isRunning);
+      nextEndTime = slot.endTime || null;
+      nextStart = slot.sessionStart || null;
+    }
     setMode(nextMode);
-    setSecondsLeft(modeToSeconds(nextMode, settings));
-    setSessionStart(null);
-    setEndTime(null);
+    setSecondsLeft(nextSeconds);
+    setIsRunning(nextRunning);
+    setSessionStart(nextStart);
+    setEndTime(nextEndTime);
   };
 
   const handleRestart = () => {
@@ -301,6 +345,12 @@ const PomodoroPage = () => {
       setEndTime(null);
     }
     // keep current running state; if stopped, remain stopped
+    persistSlot(mode, {
+      secondsLeft: fresh,
+      isRunning,
+      sessionStart: now,
+      endTime: isRunning ? Date.now() + fresh * 1000 : null,
+    });
   };
 
   const handleSaveSettings = async (nextSettings) => {
@@ -376,7 +426,7 @@ const PomodoroPage = () => {
       {error && <p className="pomodoro-error">{error}</p>}
       <PomodoroTimer
         mode={mode}
-        secondsLeft={secondsLeft}
+        secondsLeft={displaySeconds}
         isRunning={isRunning}
         onToggle={handleToggle}
         onRestart={handleRestart}

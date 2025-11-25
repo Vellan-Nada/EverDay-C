@@ -18,11 +18,6 @@ const HabitRow = ({
       <td className="habit-col">
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <strong>{habit.name}</strong>
-          {habit.lastCompleted && (
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              Last completed: {habit.lastCompleted}
-            </span>
-          )}
         </div>
       </td>
       <td className="actions-col">

@@ -60,6 +60,16 @@
   font-weight: 600;
 }
 
+.draggableItem {
+  cursor: grab;
+}
+
+.saveHint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.4rem;
+}
+
 .navSectionTitle {
   font-size: 0.75rem;
   text-transform: uppercase;
