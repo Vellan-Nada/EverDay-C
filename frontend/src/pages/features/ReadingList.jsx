@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient.js';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useGuest } from '../../context/GuestContext.jsx';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 import StatusColumn from '../../components/reading-list/StatusColumn.jsx';
 import BookFormModal from '../../components/reading-list/BookFormModal.jsx';
@@ -12,8 +13,11 @@ const STATUS_LABELS = {
   finished: 'Books have been read',
 };
 
+const FREE_LIMIT_PER_STATUS = 7;
+
 const ReadingList = () => {
   const { user, profile, authLoading, profileLoading } = useAuth();
+  const { guestData, setGuestData } = useGuest();
   const [items, setItems] = useState([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [error, setError] = useState(null);
@@ -22,16 +26,18 @@ const ReadingList = () => {
   const [defaultStatus, setDefaultStatus] = useState('want_to_read');
   const [activeItem, setActiveItem] = useState(null);
 
-  const isPremium = Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
+  const guestMode = !user;
+  const isPremium = guestMode ? false : Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
 
   // Fetch list items when user is ready
   useEffect(() => {
     if (authLoading) return;
-    if (!user) {
-      setItems([]);
+    if (guestMode) {
+      setItems(guestData.readingList || []);
       setLoadingItems(false);
       return;
     }
+    if (!user) return;
     const fetchItems = async () => {
       setLoadingItems(true);
       try {
@@ -60,6 +66,12 @@ const ReadingList = () => {
   }), [items]);
 
   const openCreate = (status) => {
+    const count = grouped[status]?.length || 0;
+    const isFreeLimitReached = !isPremium && count >= FREE_LIMIT_PER_STATUS;
+    if (isFreeLimitReached) {
+      setError(`Free plan limit reached (${FREE_LIMIT_PER_STATUS} items). Upgrade to add more.`);
+      return;
+    }
     setModalMode('create');
     setDefaultStatus(status);
     setActiveItem(null);
@@ -74,25 +86,52 @@ const ReadingList = () => {
   };
 
   const handleSave = async (values) => {
-    if (!user) return;
-    if (modalMode === 'create') {
-      const payload = { ...values, user_id: user.id };
-      const { data, error: insertError } = await supabase
-        .from('reading_list_items')
-        .insert(payload)
-        .select()
-        .single();
-      if (insertError) throw insertError;
-      setItems((prev) => [...prev, data]);
-    } else if (activeItem) {
-      const { data, error: updateError } = await supabase
-        .from('reading_list_items')
-        .update(values)
-        .eq('id', activeItem.id)
-        .select()
-        .single();
-      if (updateError) throw updateError;
-      setItems((prev) => prev.map((item) => (item.id === activeItem.id ? data : item)));
+    // enforce free limit per status
+    const countForStatus = grouped[values.status]?.length || 0;
+    const isFreeLimitReached = !isPremium && countForStatus >= FREE_LIMIT_PER_STATUS;
+    if (isFreeLimitReached) {
+      throw new Error(`Free plan limit reached (${FREE_LIMIT_PER_STATUS} items). Upgrade to add more.`);
+    }
+
+    if (guestMode) {
+      if (modalMode === 'create') {
+        const newItem = {
+          ...values,
+          id: crypto.randomUUID(),
+          user_id: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        setItems((prev) => [...prev, newItem]);
+        setGuestData((prev) => ({ ...prev, readingList: [...(prev.readingList || []), newItem] }));
+      } else if (activeItem) {
+        const updated = { ...activeItem, ...values, updated_at: new Date().toISOString() };
+        setItems((prev) => prev.map((item) => (item.id === activeItem.id ? updated : item)));
+        setGuestData((prev) => ({
+          ...prev,
+          readingList: (prev.readingList || []).map((item) => (item.id === activeItem.id ? updated : item)),
+        }));
+      }
+    } else if (user) {
+      if (modalMode === 'create') {
+        const payload = { ...values, user_id: user.id };
+        const { data, error: insertError } = await supabase
+          .from('reading_list_items')
+          .insert(payload)
+          .select()
+          .single();
+        if (insertError) throw insertError;
+        setItems((prev) => [...prev, data]);
+      } else if (activeItem) {
+        const { data, error: updateError } = await supabase
+          .from('reading_list_items')
+          .update(values)
+          .eq('id', activeItem.id)
+          .select()
+          .single();
+        if (updateError) throw updateError;
+        setItems((prev) => prev.map((item) => (item.id === activeItem.id ? data : item)));
+      }
     }
     setModalOpen(false);
     setActiveItem(null);
@@ -100,6 +139,14 @@ const ReadingList = () => {
 
   const handleDelete = async (item) => {
     if (!window.confirm('Delete this book from your list?')) return;
+    if (guestMode) {
+      setItems((prev) => prev.filter((i) => i.id !== item.id));
+      setGuestData((prev) => ({
+        ...prev,
+        readingList: (prev.readingList || []).filter((i) => i.id !== item.id),
+      }));
+      return;
+    }
     const { error: deleteError } = await supabase.from('reading_list_items').delete().eq('id', item.id);
     if (deleteError) {
       alert('Unable to delete this entry.');
@@ -109,6 +156,15 @@ const ReadingList = () => {
   };
 
   const handleMove = async (item, status) => {
+    if (guestMode) {
+      const updated = { ...item, status, updated_at: new Date().toISOString() };
+      setItems((prev) => prev.map((i) => (i.id === item.id ? updated : i)));
+      setGuestData((prev) => ({
+        ...prev,
+        readingList: (prev.readingList || []).map((i) => (i.id === item.id ? updated : i)),
+      }));
+      return;
+    }
     const { data, error: updateError } = await supabase
       .from('reading_list_items')
       .update({ status })
@@ -124,6 +180,7 @@ const ReadingList = () => {
 
   const handleColor = async (item, color) => {
     if (!isPremium) return;
+    if (guestMode) return;
     const { data, error: updateError } = await supabase
       .from('reading_list_items')
       .update({ background_color: color })
@@ -148,7 +205,6 @@ const ReadingList = () => {
   };
 
   if (authLoading || profileLoading) return <LoadingSpinner label="Loading reading list…" />;
-  if (!user) return <div className="reading-empty">Please log in to view your Reading List.</div>;
 
   return (
     <section className="reading-page">
@@ -158,6 +214,14 @@ const ReadingList = () => {
           <h1>Reading List</h1>
         </div>
       </header>
+      {!user && (
+        <div className="info-toast" style={{ marginBottom: '0.75rem' }}>
+          You’re in guest mode. Your reading list won’t be saved if you leave.{' '}
+          <button type="button" onClick={() => (window.location.href = '/signup')}>
+            Sign up
+          </button>
+        </div>
+      )}
 
       {error && <p className="reading-error">{error}</p>}
 

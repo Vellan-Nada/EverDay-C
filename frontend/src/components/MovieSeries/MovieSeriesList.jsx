@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient.js';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useGuest } from '../../context/GuestContext.jsx';
 import LoadingSpinner from '../LoadingSpinner.jsx';
 import MovieItemModal from './MovieItemModal.jsx';
 import MovieItemCard from './MovieItemCard.jsx';
@@ -12,8 +13,11 @@ const STATUS_LABELS = {
   watched: 'Movie / Series Watched',
 };
 
+const FREE_LIMIT_PER_STATUS = 7;
+
 const MovieSeriesList = () => {
   const { user, profile, authLoading, profileLoading } = useAuth();
+  const { guestData, setGuestData } = useGuest();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,15 +27,17 @@ const MovieSeriesList = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  const isPremium = Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
+  const guestMode = !user;
+  const isPremium = guestMode ? false : Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
 
   useEffect(() => {
     if (authLoading || profileLoading) return;
-    if (!user) {
-      setItems([]);
+    if (guestMode) {
+      setItems(guestData.movieItems || []);
       setLoading(false);
       return;
     }
+    if (!user) return;
     const fetchItems = async () => {
       setLoading(true);
       try {
@@ -63,6 +69,12 @@ const MovieSeriesList = () => {
   );
 
   const openAdd = (status) => {
+    const count = grouped[status]?.length || 0;
+    const isFreeLimitReached = !isPremium && count >= FREE_LIMIT_PER_STATUS;
+    if (isFreeLimitReached) {
+      setError(`Free plan limit reached (${FREE_LIMIT_PER_STATUS} items). Upgrade to add more.`);
+      return;
+    }
     setModalMode('add');
     setModalStatus(status);
     setEditingItem(null);
@@ -77,6 +89,41 @@ const MovieSeriesList = () => {
   };
 
   const handleSave = async (payload) => {
+    const countForStatus = grouped[payload.status]?.length || 0;
+    const isFreeLimitReached = !isPremium && countForStatus >= FREE_LIMIT_PER_STATUS;
+    if (isFreeLimitReached) {
+      throw new Error(`Free plan limit reached (${FREE_LIMIT_PER_STATUS} items). Upgrade to add more.`);
+    }
+
+    if (guestMode) {
+      const base = { ...payload, id: crypto.randomUUID(), user_id: null };
+      setSaving(true);
+      try {
+        if (modalMode === 'add') {
+          const newItem = {
+            ...base,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+          setItems((prev) => [newItem, ...prev]);
+          setGuestData((prev) => ({ ...prev, movieItems: [newItem, ...(prev.movieItems || [])] }));
+        } else if (editingItem) {
+          const updated = { ...editingItem, ...payload, updated_at: new Date().toISOString() };
+          setItems((prev) => prev.map((it) => (it.id === editingItem.id ? updated : it)));
+          setGuestData((prev) => ({
+            ...prev,
+            movieItems: (prev.movieItems || []).map((it) => (it.id === editingItem.id ? updated : it)),
+          }));
+        }
+        setModalOpen(false);
+        setEditingItem(null);
+        setError(null);
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
     if (!user) return;
     const base = { ...payload, user_id: user.id };
     setSaving(true);
@@ -117,6 +164,14 @@ const MovieSeriesList = () => {
 
   const handleDelete = async (item) => {
     if (!window.confirm('Delete this entry?')) return;
+    if (guestMode) {
+      setItems((prev) => prev.filter((i) => i.id !== item.id));
+      setGuestData((prev) => ({
+        ...prev,
+        movieItems: (prev.movieItems || []).filter((i) => i.id !== item.id),
+      }));
+      return;
+    }
     const { error: deleteError } = await supabase.from('movie_items').delete().eq('id', item.id);
     if (deleteError) {
       alert('Unable to delete this entry.');
@@ -126,6 +181,15 @@ const MovieSeriesList = () => {
   };
 
   const handleMove = async (item, status) => {
+    if (guestMode) {
+      const updated = { ...item, status, updated_at: new Date().toISOString() };
+      setItems((prev) => prev.map((i) => (i.id === item.id ? updated : i)));
+      setGuestData((prev) => ({
+        ...prev,
+        movieItems: (prev.movieItems || []).map((i) => (i.id === item.id ? updated : i)),
+      }));
+      return;
+    }
     const { data, error: updateError } = await supabase
       .from('movie_items')
       .update({ status })
@@ -141,6 +205,7 @@ const MovieSeriesList = () => {
 
   const handleColor = async (item, color) => {
     if (!isPremium) return;
+    if (guestMode) return;
     const { data, error: updateError } = await supabase
       .from('movie_items')
       .update({ card_color: color })
@@ -155,13 +220,20 @@ const MovieSeriesList = () => {
   };
 
   if (authLoading || profileLoading) return <LoadingSpinner label="Loading movie list…" />;
-  if (!user) return <div className="movie-empty">Please log in to view your Movie / Series list.</div>;
 
   return (
     <section className="movie-page">
       <header className="movie-header">
         <h1>Movie / Series List</h1>
       </header>
+      {!user && (
+        <div className="info-toast" style={{ marginBottom: '0.75rem' }}>
+          You’re in guest mode. This list won’t be saved if you leave.{' '}
+          <button type="button" onClick={() => (window.location.href = '/signup')}>
+            Sign up
+          </button>
+        </div>
+      )}
       {error && <p className="movie-error">{error}</p>}
       {loading ? (
         <LoadingSpinner label="Fetching items…" />

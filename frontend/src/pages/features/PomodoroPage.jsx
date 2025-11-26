@@ -85,6 +85,7 @@ const getStoredTimerState = () => {
 
 const PomodoroPage = () => {
   const { user, profile, authLoading, profileLoading } = useAuth();
+  const guestMode = !user;
   const stored = useRef(getStoredTimerState()).current;
   const [hydrated, setHydrated] = useState(false);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
@@ -110,7 +111,7 @@ const PomodoroPage = () => {
   const [reportSessions, setReportSessions] = useState([]);
   const timerRef = useRef(null);
 
-  const isPremium = Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
+  const isPremium = guestMode ? false : Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
 
   // Always derive what should be shown right now; avoids flashing default durations.
   const displaySeconds = endTime
@@ -120,7 +121,11 @@ const PomodoroPage = () => {
   // Fetch or initialize settings
   useEffect(() => {
     if (authLoading) return;
-    if (!user) return;
+    if (guestMode) {
+      setSettings(DEFAULT_SETTINGS);
+      setHydrated(true);
+      return;
+    }
     const loadSettings = async () => {
       try {
         const { data, error: fetchError } = await supabase
@@ -149,10 +154,12 @@ const PomodoroPage = () => {
       } catch (err) {
         console.error(err);
         setError('Unable to load settings');
+      } finally {
+        setHydrated(true);
       }
     };
     loadSettings();
-  }, [authLoading, user, mode, stored.isRunning]);
+  }, [authLoading, guestMode, user, mode, stored.isRunning]);
 
   // Restore from localStorage if a session was active (so timer keeps going across pages/tabs)
   useLayoutEffect(() => {
@@ -189,6 +196,17 @@ const PomodoroPage = () => {
     };
     next.activeMode = mode;
     localStorage.setItem('everday_pomodoro_state', JSON.stringify(next));
+  };
+
+  const readSlot = (modeKey) => {
+    try {
+      const raw = localStorage.getItem('everday_pomodoro_state');
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed.slots ? parsed.slots[modeKey] : null;
+    } catch (err) {
+      return null;
+    }
   };
 
   // Persist state so navigation/tab changes keep timer state
@@ -233,7 +251,7 @@ const PomodoroPage = () => {
     setIsRunning(false);
     const now = new Date().toISOString();
     const duration = modeToSeconds(mode, settings);
-    if (sessionStart) {
+    if (sessionStart && !guestMode) {
       await supabase.from('pomodoro_sessions').insert({
         user_id: user.id,
         mode,
@@ -315,7 +333,7 @@ const PomodoroPage = () => {
       endTime: null,
     });
 
-    const slot = stored.slots[nextMode];
+    const slot = readSlot(nextMode);
     const fresh = modeToSeconds(nextMode, settings);
     let nextSeconds = fresh;
     let nextRunning = false;
@@ -356,19 +374,26 @@ const PomodoroPage = () => {
   const handleSaveSettings = async (nextSettings) => {
     setSettingsSaving(true);
     try {
-      const payload = { ...DEFAULT_SETTINGS, ...nextSettings, user_id: user.id, updated_at: new Date().toISOString() };
-      const { error: upsertError, data } = await supabase
-        .from('pomodoro_settings')
-        .upsert(payload)
-        .select()
-        .single();
-      if (upsertError) throw upsertError;
-      setSettings({ ...DEFAULT_SETTINGS, ...data });
-      // If timer is idle, reset duration to match mode
-      if (!isRunning) {
-        setSecondsLeft(modeToSeconds(mode, { ...DEFAULT_SETTINGS, ...data }));
+      if (guestMode) {
+        const merged = { ...DEFAULT_SETTINGS, ...nextSettings };
+        setSettings(merged);
+        if (!isRunning) setSecondsLeft(modeToSeconds(mode, merged));
+        setSettingsOpen(false);
+      } else {
+        const payload = { ...DEFAULT_SETTINGS, ...nextSettings, user_id: user.id, updated_at: new Date().toISOString() };
+        const { error: upsertError, data } = await supabase
+          .from('pomodoro_settings')
+          .upsert(payload)
+          .select()
+          .single();
+        if (upsertError) throw upsertError;
+        setSettings({ ...DEFAULT_SETTINGS, ...data });
+        // If timer is idle, reset duration to match mode
+        if (!isRunning) {
+          setSecondsLeft(modeToSeconds(mode, { ...DEFAULT_SETTINGS, ...data }));
+        }
+        setSettingsOpen(false);
       }
-      setSettingsOpen(false);
     } catch (err) {
       console.error(err);
       setError(err.message || 'Unable to save settings');
@@ -382,6 +407,12 @@ const PomodoroPage = () => {
     const fetchReport = async () => {
       if (!showReport || !isPremium) return;
       setReportLoading(true);
+      if (guestMode) {
+        setReportSessions([]);
+        setReportError(null);
+        setReportLoading(false);
+        return;
+      }
       try {
         const { data, error: fetchError } = await supabase
           .from('pomodoro_sessions')
@@ -400,14 +431,10 @@ const PomodoroPage = () => {
       }
     };
     fetchReport();
-  }, [showReport, isPremium, user]);
+  }, [showReport, isPremium, guestMode, user]);
 
   if (authLoading || profileLoading || !hydrated) {
     return <LoadingSpinner label="Loading Pomodoro…" />;
-  }
-
-  if (!user) {
-    return <div className="pomodoro-empty">Please sign in to use Pomodoro.</div>;
   }
 
   return (
@@ -423,6 +450,14 @@ const PomodoroPage = () => {
           </button>
         </div>
       </div>
+      {guestMode && (
+        <div className="info-toast" style={{ marginBottom: '0.75rem' }}>
+          You’re in guest mode. Pomodoro sessions won’t be saved if you leave.{' '}
+          <button type="button" onClick={() => (window.location.href = '/signup')}>
+            Sign up
+          </button>
+        </div>
+      )}
       {error && <p className="pomodoro-error">{error}</p>}
       <PomodoroTimer
         mode={mode}

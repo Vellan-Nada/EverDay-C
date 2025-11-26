@@ -6,6 +6,7 @@ import FeedbackButton from '../components/FeedbackButton.jsx';
 import FeedbackModal from '../components/FeedbackModal.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import { useAuth } from '../hooks/useAuth.js';
+import { useGuest } from '../context/GuestContext.jsx';
 import { fetchFeatures } from '../api/featureApi.js';
 import { createBillingPortalSession, createCheckoutSession } from '../api/billingApi.js';
 import layoutStyles from '../styles/DashboardLayout.module.css';
@@ -13,6 +14,7 @@ import layoutStyles from '../styles/DashboardLayout.module.css';
 const DashboardLayout = () => {
   const navigate = useNavigate();
   const { user, token, profile, signOut, authLoading, isPro, planTier } = useAuth();
+  const { guestData } = useGuest();
   const [features, setFeatures] = useState([]);
   const [featureError, setFeatureError] = useState(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -72,6 +74,27 @@ const DashboardLayout = () => {
     }
     setFeedbackOpen(true);
   };
+
+  // Warn guests about unsaved data on exit
+  useEffect(() => {
+    if (user) return;
+    const hasGuestData =
+      (guestData.notes && guestData.notes.length > 0) ||
+      (guestData.todos && guestData.todos.length > 0) ||
+      (guestData.habits && guestData.habits.length > 0) ||
+      (guestData.habitLogs && Object.keys(guestData.habitLogs).length > 0) ||
+      (guestData.readingList && guestData.readingList.length > 0) ||
+      (guestData.movieItems && guestData.movieItems.length > 0) ||
+      (guestData.journalEntries && guestData.journalEntries.length > 0) ||
+      (guestData.sourceDumps && guestData.sourceDumps.length > 0);
+    if (!hasGuestData) return;
+    const handler = (e) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [user, guestData]);
 
   return (
     <>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient.js';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useGuest } from '../../context/GuestContext.jsx';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 import JournalHeader from '../../components/Journal/JournalHeader.jsx';
 import MonthGrid from '../../components/Journal/MonthGrid.jsx';
@@ -11,6 +12,7 @@ import '../../styles/Journal.css';
 
 const JournalPage = () => {
   const { user, profile, authLoading, profileLoading } = useAuth();
+  const { guestData, setGuestData } = useGuest();
   const [month, setMonth] = useState(new Date().getMonth());
   const [year, setYear] = useState(new Date().getFullYear());
   const [entries, setEntries] = useState([]);
@@ -21,7 +23,8 @@ const JournalPage = () => {
   const [reportOpen, setReportOpen] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState(null);
-  const isPremium = Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
+  const guestMode = !user;
+  const isPremium = guestMode ? false : Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
 
   const entriesMap = useMemo(() => {
     const map = {};
@@ -33,6 +36,15 @@ const JournalPage = () => {
 
   useEffect(() => {
     if (authLoading || profileLoading) return;
+    if (guestMode) {
+      const allEntries = guestData.journalEntries || [];
+      const startDate = new Date(year, month, 1).toISOString().slice(0, 10);
+      const endDate = new Date(year, month + 1, 0).toISOString().slice(0, 10);
+      const filtered = allEntries.filter((e) => e.entry_date >= startDate && e.entry_date <= endDate);
+      setEntries(filtered);
+      setLoading(false);
+      return;
+    }
     if (!user) return;
     const fetchEntries = async () => {
       setLoading(true);
@@ -59,7 +71,7 @@ const JournalPage = () => {
       }
     };
     fetchEntries();
-  }, [authLoading, profileLoading, month, year, user]);
+  }, [authLoading, profileLoading, guestMode, month, year, user, guestData.journalEntries]);
 
   const openDate = (dateKey) => {
     setModalDate(dateKey);
@@ -67,25 +79,47 @@ const JournalPage = () => {
   };
 
   const handleSaveEntry = async (form) => {
-    if (!user || !modalDate) return;
+    if (!modalDate) return;
     const existing = entriesMap[modalDate];
-    if (existing) {
-      const { data, error: updateError } = await supabase
-        .from('journal_entries')
-        .update({ ...form, updated_at: new Date().toISOString() })
-        .eq('id', existing.id)
-        .select()
-        .single();
-      if (updateError) throw updateError;
-      setEntries((prev) => prev.map((e) => (e.id === existing.id ? data : e)));
-    } else {
-      const { data, error: insertError } = await supabase
-        .from('journal_entries')
-        .insert({ ...form, user_id: user.id, entry_date: modalDate })
-        .select()
-        .single();
-      if (insertError) throw insertError;
-      setEntries((prev) => [...prev, data]);
+    if (guestMode) {
+      if (existing) {
+        const updated = { ...existing, ...form, updated_at: new Date().toISOString() };
+        setEntries((prev) => prev.map((e) => (e.id === existing.id ? updated : e)));
+        setGuestData((prev) => ({
+          ...prev,
+          journalEntries: (prev.journalEntries || []).map((e) => (e.id === existing.id ? updated : e)),
+        }));
+      } else {
+        const newEntry = {
+          ...form,
+          id: crypto.randomUUID(),
+          user_id: null,
+          entry_date: modalDate,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        setEntries((prev) => [...prev, newEntry]);
+        setGuestData((prev) => ({ ...prev, journalEntries: [...(prev.journalEntries || []), newEntry] }));
+      }
+    } else if (user) {
+      if (existing) {
+        const { data, error: updateError } = await supabase
+          .from('journal_entries')
+          .update({ ...form, updated_at: new Date().toISOString() })
+          .eq('id', existing.id)
+          .select()
+          .single();
+        if (updateError) throw updateError;
+        setEntries((prev) => prev.map((e) => (e.id === existing.id ? data : e)));
+      } else {
+        const { data, error: insertError } = await supabase
+          .from('journal_entries')
+          .insert({ ...form, user_id: user.id, entry_date: modalDate })
+          .select()
+          .single();
+        if (insertError) throw insertError;
+        setEntries((prev) => [...prev, data]);
+      }
     }
     setModalOpen(false);
     setModalDate(null);
@@ -94,6 +128,16 @@ const JournalPage = () => {
   const handleDeleteEntry = async () => {
     const existing = entriesMap[modalDate];
     if (!existing) return;
+    if (guestMode) {
+      setEntries((prev) => prev.filter((e) => e.id !== existing.id));
+      setGuestData((prev) => ({
+        ...prev,
+        journalEntries: (prev.journalEntries || []).filter((e) => e.id !== existing.id),
+      }));
+      setModalOpen(false);
+      setModalDate(null);
+      return;
+    }
     const { error: deleteError } = await supabase.from('journal_entries').delete().eq('id', existing.id);
     if (deleteError) throw deleteError;
     setEntries((prev) => prev.filter((e) => e.id !== existing.id));
@@ -102,7 +146,7 @@ const JournalPage = () => {
   };
 
   const handleReport = async () => {
-    if (!isPremium) {
+    if (!isPremium || guestMode) {
       setReportOpen(true);
       return;
     }
@@ -137,7 +181,6 @@ const JournalPage = () => {
   };
 
   if (authLoading || profileLoading) return <LoadingSpinner label="Loading journal…" />;
-  if (!user) return <div className="journal-empty">Please log in to view your Journal.</div>;
 
   return (
     <section className="journal-page">
@@ -148,6 +191,14 @@ const JournalPage = () => {
         onYearChange={setYear}
         onReport={handleReport}
       />
+      {!user && (
+        <div className="info-toast" style={{ marginBottom: '0.75rem' }}>
+          You’re in guest mode. Journal entries won’t be saved if you leave.{' '}
+          <button type="button" onClick={() => (window.location.href = '/signup')}>
+            Sign up
+          </button>
+        </div>
+      )}
       {error && <p className="journal-error">{error}</p>}
       {loading ? (
         <LoadingSpinner label="Fetching entries…" />

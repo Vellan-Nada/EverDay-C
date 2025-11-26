@@ -1,24 +1,27 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient.js';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useGuest } from '../../context/GuestContext.jsx';
 import TodoSection from '../../components/Todos/TodoSection.jsx';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 import '../../styles/Todos.css';
 
 const SECTION_CONFIG = [
-  { type: 'task', label: 'To Do', limit: 30 },
-  { type: 'yearly', label: 'Yearly Goals', limit: 6 },
-  { type: 'monthly', label: 'Monthly Goals', limit: 6 },
+  { type: 'task', label: 'To Do', limit: 10 },
+  { type: 'yearly', label: 'Yearly Goals', limit: 5 },
+  { type: 'monthly', label: 'Monthly Goals', limit: 5 },
 ];
 
 const TodoPage = () => {
   const { user, profile, authLoading, profileLoading } = useAuth();
+  const { guestData, setGuestData } = useGuest();
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [colorSavingId, setColorSavingId] = useState(null);
 
-  const isPremium = Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
+  const guestMode = !user;
+  const isPremium = guestMode ? false : Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
   const isFree = !isPremium;
 
   const grouped = useMemo(() => {
@@ -37,11 +40,12 @@ const TodoPage = () => {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) {
-      setTodos([]);
+    if (guestMode) {
+      setTodos(guestData.todos || []);
       setLoading(false);
       return;
     }
+    if (!user) return;
 
     const fetchTodos = async () => {
       setLoading(true);
@@ -66,7 +70,22 @@ const TodoPage = () => {
   }, [authLoading, user]);
 
   const handleAdd = async (type, title) => {
-    if (!user) throw new Error('Please sign in to add items.');
+    if (guestMode) {
+      const newTodo = {
+        id: crypto.randomUUID(),
+        user_id: null,
+        type,
+        title,
+        is_completed: false,
+        background_color: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      setTodos((prev) => [...prev, newTodo]);
+      setGuestData((prev) => ({ ...prev, todos: [...(prev.todos || []), newTodo] }));
+      return;
+    }
+
     const payload = {
       user_id: user.id,
       type,
@@ -78,6 +97,15 @@ const TodoPage = () => {
   };
 
   const handleToggleComplete = async (todo) => {
+    if (guestMode) {
+      const updated = { ...todo, is_completed: !todo.is_completed, updated_at: new Date().toISOString() };
+      setTodos((prev) => prev.map((row) => (row.id === todo.id ? updated : row)));
+      setGuestData((prev) => ({
+        ...prev,
+        todos: (prev.todos || []).map((row) => (row.id === todo.id ? updated : row)),
+      }));
+      return;
+    }
     const { data, error: updateError } = await supabase
       .from('todos')
       .update({ is_completed: !todo.is_completed, updated_at: new Date().toISOString() })
@@ -93,6 +121,14 @@ const TodoPage = () => {
 
   const handleDelete = async (todo) => {
     if (!window.confirm('Delete this item?')) return;
+    if (guestMode) {
+      setTodos((prev) => prev.filter((row) => row.id !== todo.id));
+      setGuestData((prev) => ({
+        ...prev,
+        todos: (prev.todos || []).filter((row) => row.id !== todo.id),
+      }));
+      return;
+    }
     const { error: deleteError } = await supabase.from('todos').delete().eq('id', todo.id);
     if (deleteError) {
       alert('Unable to delete item.');
@@ -102,6 +138,15 @@ const TodoPage = () => {
   };
 
   const handleUpdateTitle = async (todo, title) => {
+    if (guestMode) {
+      const updated = { ...todo, title, updated_at: new Date().toISOString() };
+      setTodos((prev) => prev.map((row) => (row.id === todo.id ? updated : row)));
+      setGuestData((prev) => ({
+        ...prev,
+        todos: (prev.todos || []).map((row) => (row.id === todo.id ? updated : row)),
+      }));
+      return;
+    }
     const { data, error: updateError } = await supabase
       .from('todos')
       .update({ title, updated_at: new Date().toISOString() })
@@ -135,10 +180,6 @@ const TodoPage = () => {
     return <LoadingSpinner label="Loading workspace…" />;
   }
 
-  if (!user) {
-    return <div className="todo-empty-state">Please sign in to manage your tasks.</div>;
-  }
-
   return (
     <section className="todo-page">
       <header className="todo-page-header">
@@ -147,6 +188,14 @@ const TodoPage = () => {
           <h1>To-Do & Goals</h1>
         </div>
       </header>
+      {!user && (
+        <div className="info-toast" style={{ marginBottom: '0.75rem' }}>
+          You’re in guest mode. Tasks won’t be saved if you leave.{' '}
+          <button type="button" onClick={() => (window.location.href = '/signup')}>
+            Sign up
+          </button>
+        </div>
+      )}
       {error && <p style={{ color: 'var(--danger)' }}>{error}</p>}
       {loading ? (
         <LoadingSpinner label="Syncing your items…" />

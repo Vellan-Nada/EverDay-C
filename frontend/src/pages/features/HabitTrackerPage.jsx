@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient.js';
+import { useAuth } from '../../hooks/useAuth.js';
+import { useGuest } from '../../context/GuestContext.jsx';
 import HabitTable from '../../components/HabitTracker/HabitTable.jsx';
 import AddHabitModal from '../../components/HabitTracker/AddHabitModal.jsx';
 import StreakSummaryCard from '../../components/HabitTracker/StreakSummaryCard.jsx';
@@ -56,8 +58,10 @@ const decorateHabit = (habit, habitLogs, range) => {
 };
 
 const HabitTrackerPage = () => {
-  const [user, setUser] = useState(null);
+  const { user, profile, authLoading, profileLoading } = useAuth();
+  const { guestData, setGuestData } = useGuest();
   const [isPremium, setIsPremium] = useState(false);
+  const guestMode = !user;
   const [habits, setHabits] = useState([]);
   const [history, setHistory] = useState([]);
   const [logMap, setLogMap] = useState({});
@@ -69,30 +73,36 @@ const HabitTrackerPage = () => {
   const [limitReached, setLimitReached] = useState(false);
   const [dates, setDates] = useState([]);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data, error: authError } = await supabase.auth.getUser();
-      if (authError || !data?.user) {
-        setError('Please log in to start tracking habits.');
-        setLoading(false);
-        return;
-      }
-      setUser(data.user);
-    };
-    fetchUser();
-  }, []);
+  const recompute = useCallback(
+    (habitRows, logs, premiumFlag) => {
+      const activeHabits = (habitRows || []).filter((habit) => !habit.is_deleted);
+      const deletedHabits = (habitRows || []).filter((habit) => habit.is_deleted);
+      let earliestDate = todayIso();
+      activeHabits.forEach((habit) => {
+        if (habit.created_at) {
+          const created = habit.created_at.slice(0, 10);
+          if (created < earliestDate) earliestDate = created;
+        }
+      });
+      const range = activeHabits.length ? buildDateRangeFrom(earliestDate) : [];
+      const decorated = activeHabits.map((habit) => decorateHabit(habit, logs[habit.id] || {}, range));
+      setDates(range);
+      setLimitReached(!premiumFlag && decorated.length >= 7);
+      setHabits(decorated);
+      setHistory(deletedHabits);
+      setLogMap(logs);
+      setShowStreak(premiumFlag);
+      setLoading(false);
+    },
+    []
+  );
 
   const loadHabits = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
-      const { data: profileRow } = await supabase
-        .from('profiles')
-        .select('is_premium, plan')
-        .eq('id', user.id)
-        .single();
-      const planName = profileRow?.plan || 'free';
-      const premiumFlag = Boolean(profileRow?.is_premium) || ['plus', 'pro'].includes(planName);
+      const planName = profile?.plan || 'free';
+      const premiumFlag = Boolean(profile?.is_premium) || ['plus', 'pro'].includes(planName);
       setIsPremium(premiumFlag);
       const { data: habitRows, error: habitError } = await supabase
         .from('habits')
@@ -100,19 +110,15 @@ const HabitTrackerPage = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: true });
       if (habitError) throw habitError;
-      const activeHabits = (habitRows || []).filter((habit) => !habit.is_deleted);
-      const deletedHabits = (habitRows || []).filter((habit) => habit.is_deleted);
-      const habitIds = activeHabits.map((habit) => habit.id);
+      const habitIds = (habitRows || []).filter((h) => !h.is_deleted).map((h) => h.id);
       let logs = {};
       let earliestDate = todayIso();
-      if (activeHabits.length) {
-        activeHabits.forEach((habit) => {
-          if (habit.created_at) {
-            const created = habit.created_at.slice(0, 10);
-            if (created < earliestDate) earliestDate = created;
-          }
-        });
-      }
+      (habitRows || []).forEach((habit) => {
+        if (habit.created_at) {
+          const created = habit.created_at.slice(0, 10);
+          if (created < earliestDate) earliestDate = created;
+        }
+      });
       if (habitIds.length) {
         const { data: logRows } = await supabase
           .from('habit_logs')
@@ -126,40 +132,27 @@ const HabitTrackerPage = () => {
           });
         }
       }
-      const updates = [];
-      const range = activeHabits.length ? buildDateRangeFrom(earliestDate) : [];
-      const decorated = activeHabits.map((habit) => {
-        const decoratedHabit = decorateHabit(habit, logs[habit.id] || {}, range);
-        if (decoratedHabit.best_streak > (habit.best_streak || 0)) {
-          updates.push(
-            supabase.from('habits').update({ best_streak: decoratedHabit.best_streak }).eq('id', habit.id)
-          );
-        }
-        return decoratedHabit;
-      });
-      if (updates.length) {
-        Promise.all(updates).catch((err) => console.error('Best streak update failed', err));
-      }
-      setDates(range);
-      setLimitReached(!premiumFlag && decorated.length >= 10);
-      setHabits(decorated);
-      setHistory(deletedHabits);
-      setLogMap(logs);
-      setShowStreak(premiumFlag);
+      recompute(habitRows || [], logs, premiumFlag);
       setError(null);
     } catch (err) {
       console.error(err);
       setError('Unable to load habits.');
-    } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, profile, recompute]);
 
   useEffect(() => {
+    if (authLoading || profileLoading) return;
+    if (guestMode) {
+      recompute(guestData.habits || [], guestData.habitLogs || {}, false);
+      return;
+    }
     if (user) {
       loadHabits();
+    } else {
+      setLoading(false);
     }
-  }, [user, loadHabits]);
+  }, [authLoading, profileLoading, guestMode, guestData, user, loadHabits, recompute]);
 
   const handleToggleStatus = async (habit, date, desiredStatus = null) => {
     const createdDate = habit.created_at?.slice(0, 10);
@@ -171,6 +164,20 @@ const HabitTrackerPage = () => {
     const isCompleted = existing?.status === 'completed';
     const nextStatus = desiredStatus || (isCompleted ? 'failed' : 'completed');
     if (desiredStatus && existing?.status === desiredStatus) {
+      return;
+    }
+
+    if (guestMode) {
+      const nextLogs = { ...logMap };
+      if (!nextLogs[habit.id]) nextLogs[habit.id] = {};
+      nextLogs[habit.id][date.iso] = {
+        id: `${habit.id}-${date.iso}`,
+        habit_id: habit.id,
+        log_date: date.iso,
+        status: nextStatus,
+      };
+      setGuestData((prev) => ({ ...prev, habitLogs: nextLogs, habits: habits.map((h) => ({ ...h })) }));
+      recompute(habits.map((h) => ({ ...h })), nextLogs, false);
       return;
     }
 
@@ -197,7 +204,26 @@ const HabitTrackerPage = () => {
       icon_key: payload.icon_key || null,
     };
     try {
-      if (payload.id) {
+      if (guestMode) {
+        if (payload.id) {
+          const nextHabits = habits.map((h) => (h.id === payload.id ? { ...h, ...newHabit } : h));
+          setGuestData((prev) => ({ ...prev, habits: nextHabits, habitLogs: logMap }));
+          recompute(nextHabits, logMap, false);
+        } else {
+          const freshHabit = {
+            id: crypto.randomUUID(),
+            user_id: null,
+            ...newHabit,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            best_streak: 0,
+            is_deleted: false,
+          };
+          const nextHabits = [...habits, freshHabit];
+          setGuestData((prev) => ({ ...prev, habits: nextHabits, habitLogs: logMap }));
+          recompute(nextHabits, logMap, false);
+        }
+      } else if (payload.id) {
         await supabase.from('habits').update(newHabit).eq('id', payload.id);
       } else {
         await supabase.from('habits').insert({
@@ -206,7 +232,7 @@ const HabitTrackerPage = () => {
         });
       }
       setModalState({ open: false, habit: null });
-      await loadHabits();
+      if (!guestMode) await loadHabits();
     } catch (err) {
       console.error(err);
       setError('Unable to save habit.');
@@ -214,11 +240,23 @@ const HabitTrackerPage = () => {
   };
 
   const handleDeleteHabit = async (habit) => {
+    if (guestMode) {
+      const nextHabits = habits.map((h) => (h.id === habit.id ? { ...h, is_deleted: true } : h));
+      setGuestData((prev) => ({ ...prev, habits: nextHabits, habitLogs: logMap }));
+      recompute(nextHabits, logMap, false);
+      return;
+    }
     await supabase.from('habits').update({ is_deleted: true }).eq('id', habit.id);
     await loadHabits();
   };
 
   const handleRestoreHabit = async (habit) => {
+    if (guestMode) {
+      const nextHabits = habits.map((h) => (h.id === habit.id ? { ...h, is_deleted: false } : h));
+      setGuestData((prev) => ({ ...prev, habits: nextHabits, habitLogs: logMap }));
+      recompute(nextHabits, logMap, false);
+      return;
+    }
     await supabase.from('habits').update({ is_deleted: false }).eq('id', habit.id);
     await loadHabits();
   };
@@ -229,6 +267,14 @@ const HabitTrackerPage = () => {
     );
     if (!proceed) return;
     try {
+      if (guestMode) {
+        const nextHabits = habits.filter((h) => h.id !== habit.id);
+        const nextLogs = { ...logMap };
+        delete nextLogs[habit.id];
+        setGuestData((prev) => ({ ...prev, habits: nextHabits, habitLogs: nextLogs }));
+        recompute(nextHabits, nextLogs, false);
+        return;
+      }
       await supabase.from('habits').delete().eq('id', habit.id);
       await loadHabits();
     } catch (err) {
@@ -237,16 +283,12 @@ const HabitTrackerPage = () => {
     }
   };
 
-  if (loading) {
+  if (authLoading || profileLoading) {
     return <div className="habit-empty">Loading habits…</div>;
   }
 
   if (error) {
     return <div className="habit-empty">{error}</div>;
-  }
-
-  if (!user) {
-    return <div className="habit-empty">Please sign in to manage your habits.</div>;
   }
 
   return (
@@ -274,6 +316,15 @@ const HabitTrackerPage = () => {
         </label>
         <span className="habit-info">i</span>
       </div>
+
+      {!user && (
+        <div className="info-toast" style={{ marginBottom: '0.75rem' }}>
+          You’re in guest mode. Habits won’t be saved if you leave.{' '}
+          <button type="button" onClick={() => (window.location.href = '/signup')}>
+            Sign up
+          </button>
+        </div>
+      )}
 
       <HabitTable
         habits={habits}

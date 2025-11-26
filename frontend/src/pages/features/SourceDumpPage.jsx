@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient.js';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useGuest } from '../../context/GuestContext.jsx';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 import SourceDumpModal from '../../components/SourceDump/SourceDumpModal.jsx';
 import SourceCard from '../../components/SourceDump/SourceCard.jsx';
@@ -9,16 +10,25 @@ import '../../styles/SourceDump.css';
 
 const SourceDumpPage = () => {
   const { user, profile, authLoading, profileLoading } = useAuth();
+  const { guestData, setGuestData } = useGuest();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [activeItem, setActiveItem] = useState(null);
   const [detailItem, setDetailItem] = useState(null);
-  const isPremium = Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
+  const guestMode = !user;
+  const isPremium = guestMode ? false : Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
+  const FREE_LIMIT = 7;
 
   useEffect(() => {
-    if (authLoading || profileLoading || !user) return;
+    if (authLoading || profileLoading) return;
+    if (guestMode) {
+      setItems(guestData.sourceDumps || []);
+      setLoading(false);
+      return;
+    }
+    if (!user) return;
     const fetchItems = async () => {
       setLoading(true);
       try {
@@ -41,6 +51,40 @@ const SourceDumpPage = () => {
   }, [authLoading, profileLoading, user]);
 
   const handleSave = async (payload) => {
+    const isFreeLimitReached = !isPremium && items.length >= FREE_LIMIT;
+    if (isFreeLimitReached) {
+      throw new Error(`Free plan limit reached (${FREE_LIMIT} items). Upgrade to add more.`);
+    }
+
+    if (guestMode) {
+      if (activeItem) {
+        const updated = {
+          ...activeItem,
+          ...payload,
+          updated_at: new Date().toISOString(),
+        };
+        setItems((prev) => prev.map((i) => (i.id === activeItem.id ? updated : i)));
+        setGuestData((prev) => ({
+          ...prev,
+          sourceDumps: (prev.sourceDumps || []).map((i) => (i.id === activeItem.id ? updated : i)),
+        }));
+        setDetailItem(null);
+      } else {
+        const newItem = {
+          ...payload,
+          id: crypto.randomUUID(),
+          user_id: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        setItems((prev) => [newItem, ...prev]);
+        setGuestData((prev) => ({ ...prev, sourceDumps: [newItem, ...(prev.sourceDumps || [])] }));
+      }
+      setModalOpen(false);
+      setActiveItem(null);
+      return;
+    }
+
     if (!user) return;
     if (activeItem) {
       const { data, error: updateError } = await supabase
@@ -77,6 +121,15 @@ const SourceDumpPage = () => {
   };
 
   const handleDelete = async (card) => {
+    if (guestMode) {
+      setItems((prev) => prev.filter((i) => i.id !== card.id));
+      setGuestData((prev) => ({
+        ...prev,
+        sourceDumps: (prev.sourceDumps || []).filter((i) => i.id !== card.id),
+      }));
+      setDetailItem(null);
+      return;
+    }
     const { error: deleteError } = await supabase.from('source_dumps').delete().eq('id', card.id);
     if (deleteError) {
       alert('Unable to delete.');
@@ -88,6 +141,7 @@ const SourceDumpPage = () => {
 
   const handleChangeColor = async (card, color) => {
     if (!isPremium) return;
+    if (guestMode) return;
     const { data, error: updateError } = await supabase
       .from('source_dumps')
       .update({ background_color: color })
@@ -102,7 +156,6 @@ const SourceDumpPage = () => {
   };
 
   if (authLoading || profileLoading || loading) return <LoadingSpinner label="Loading source dump…" />;
-  if (!user) return <div className="sd-empty">Please log in to use Source Dump.</div>;
 
   return (
     <section className="sd-page">
@@ -113,6 +166,14 @@ const SourceDumpPage = () => {
         </div>
         <div className="sd-info" title="Use Source Dump to store links, notes, and screenshots related to your work.">i</div>
       </div>
+      {!user && (
+        <div className="info-toast" style={{ marginBottom: '0.75rem' }}>
+          You’re in guest mode. Source Dumps won’t be saved if you leave.{' '}
+          <button type="button" onClick={() => (window.location.href = '/signup')}>
+            Sign up
+          </button>
+        </div>
+      )}
       <div className="sd-actions">
         <button type="button" className="sd-btn primary" onClick={() => { setActiveItem(null); setModalOpen(true); }}>
           + Add source
@@ -140,7 +201,7 @@ const SourceDumpPage = () => {
         isOpen={modalOpen}
         initialData={activeItem}
         isPremium={isPremium}
-        userId={user.id}
+        userId={user?.id}
         onClose={() => {
           setModalOpen(false);
           setActiveItem(null);

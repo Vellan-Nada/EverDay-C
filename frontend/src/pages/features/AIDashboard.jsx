@@ -199,7 +199,7 @@ const AIDashboard = () => {
   };
 
   if (authLoading || profileLoading) return <LoadingSpinner label="Loading AI…" />;
-  if (!user) return <div className="ai-empty">Please log in to view AI Insights.</div>;
+  if (!user) return <FreeView />;
   if (!isPremium) return <FreeView />;
   if (loading) return <LoadingSpinner label="Building your AI dashboard…" />;
 

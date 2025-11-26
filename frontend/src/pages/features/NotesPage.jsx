@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient.js';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useGuest } from '../../context/GuestContext.jsx';
 import AddNoteForm from '../../components/Notes/AddNoteForm.jsx';
 import NotesGrid from '../../components/Notes/NotesGrid.jsx';
 import UpgradeToPremium from '../../components/Notes/UpgradeToPremium.jsx';
 import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 import '../../styles/Notes.css';
 
-const FREE_NOTE_LIMIT = 40;
+const FREE_NOTE_LIMIT = 15;
 
 const NotesPage = () => {
   const { user, profile, authLoading, profileLoading } = useAuth();
+  const { guestData, setGuestData } = useGuest();
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ title: '', content: '' });
@@ -21,14 +23,15 @@ const NotesPage = () => {
   const [colorSavingId, setColorSavingId] = useState(null);
   const [globalError, setGlobalError] = useState(null);
 
-  const isPremium = Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
+  const guestMode = !user;
+  const isPremium = guestMode ? false : Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
   const noteCount = notes.length;
   const limitReached = !isPremium && noteCount >= FREE_NOTE_LIMIT;
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) {
-      setNotes([]);
+    if (guestMode) {
+      setNotes(guestData.notes || []);
       setLoading(false);
       return;
     }
@@ -69,15 +72,10 @@ const NotesPage = () => {
   };
 
   const handleAddNote = async () => {
-    if (!user) {
-      setAddError('Please sign in to save notes.');
-      return;
-    }
     if (limitReached) return;
     const payload = {
       title: form.title.trim() || null,
       content: form.content.trim() || null,
-      user_id: user.id,
     };
     if (!payload.title && !payload.content) {
       setAddError('Title or content is required.');
@@ -85,13 +83,19 @@ const NotesPage = () => {
     }
     setAdding(true);
     try {
-      const { data, error } = await supabase
-        .from('notes')
-        .insert(payload)
-        .select()
-        .single();
-      if (error) throw error;
-      setNotes((prev) => [data, ...prev]);
+      if (guestMode) {
+        const newNote = { ...payload, id: crypto.randomUUID(), created_at: new Date().toISOString() };
+        setNotes((prev) => [newNote, ...prev]);
+        setGuestData((prev) => ({ ...prev, notes: [newNote, ...(prev.notes || [])] }));
+      } else {
+        const { data, error } = await supabase
+          .from('notes')
+          .insert({ ...payload, user_id: user.id })
+          .select()
+          .single();
+        if (error) throw error;
+        setNotes((prev) => [data, ...prev]);
+      }
       resetForm();
     } catch (err) {
       console.error(err);
@@ -127,18 +131,36 @@ const NotesPage = () => {
       content: editDraft.content.trim() || null,
       updated_at: new Date().toISOString(),
     };
-    const { data, error } = await supabase
-      .from('notes')
-      .update(updates)
-      .eq('id', noteId)
-      .select()
-      .single();
-    if (error) throw error;
-    setNotes((prev) => prev.map((note) => (note.id === noteId ? data : note)));
+    if (guestMode) {
+      setNotes((prev) =>
+        prev.map((note) => (note.id === noteId ? { ...note, ...updates } : note))
+      );
+      setGuestData((prev) => ({
+        ...prev,
+        notes: (prev.notes || []).map((note) => (note.id === noteId ? { ...note, ...updates } : note)),
+      }));
+    } else {
+      const { data, error } = await supabase
+        .from('notes')
+        .update(updates)
+        .eq('id', noteId)
+        .select()
+        .single();
+      if (error) throw error;
+      setNotes((prev) => prev.map((note) => (note.id === noteId ? data : note)));
+    }
     cancelEdit();
   };
 
   const deleteNote = async (noteId) => {
+    if (guestMode) {
+      setNotes((prev) => prev.filter((note) => note.id !== noteId));
+      setGuestData((prev) => ({
+        ...prev,
+        notes: (prev.notes || []).filter((note) => note.id !== noteId),
+      }));
+      return;
+    }
     const { error } = await supabase.from('notes').delete().eq('id', noteId);
     if (error) throw error;
     setNotes((prev) => prev.filter((note) => note.id !== noteId));
@@ -148,14 +170,26 @@ const NotesPage = () => {
     if (!isPremium) return;
     setColorSavingId(noteId);
     try {
-      const { data, error } = await supabase
-        .from('notes')
-        .update({ color, updated_at: new Date().toISOString() })
-        .eq('id', noteId)
-        .select()
-        .single();
-      if (error) throw error;
-      setNotes((prev) => prev.map((note) => (note.id === noteId ? data : note)));
+      if (guestMode) {
+        setNotes((prev) =>
+          prev.map((note) => (note.id === noteId ? { ...note, color, updated_at: new Date().toISOString() } : note))
+        );
+        setGuestData((prev) => ({
+          ...prev,
+          notes: (prev.notes || []).map((note) =>
+            note.id === noteId ? { ...note, color, updated_at: new Date().toISOString() } : note
+          ),
+        }));
+      } else {
+        const { data, error } = await supabase
+          .from('notes')
+          .update({ color, updated_at: new Date().toISOString() })
+          .eq('id', noteId)
+          .select()
+          .single();
+        if (error) throw error;
+        setNotes((prev) => prev.map((note) => (note.id === noteId ? data : note)));
+      }
     } catch (err) {
       throw err;
     } finally {
@@ -165,10 +199,6 @@ const NotesPage = () => {
 
   if (authLoading || profileLoading) {
     return <LoadingSpinner label="Loading workspace…" />;
-  }
-
-  if (!user) {
-    return <div className="notes-empty">Please sign in to create and sync notes.</div>;
   }
 
   return (
@@ -182,6 +212,12 @@ const NotesPage = () => {
           i
         </button>
       </header>
+
+      {!user && (
+        <div className="info-toast" style={{ marginBottom: '0.75rem' }}>
+          You’re in guest mode. Notes won’t be saved if you leave. <button type="button" onClick={() => (window.location.href = '/signup')}>Sign up</button>
+        </div>
+      )}
 
       <AddNoteForm
         title={form.title}
