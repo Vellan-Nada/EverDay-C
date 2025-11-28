@@ -31,10 +31,6 @@ const FEATURE_PLACEHOLDERS = {
     title: 'Source Dump',
     description: 'Drop screenshots, links, and copied text for later review.',
   },
-  aiHelper: {
-    title: 'AI Helper',
-    description: 'Context-aware assistant powered by OpenAI.',
-  },
 };
 
 export const listFeatures = (req, res) => {

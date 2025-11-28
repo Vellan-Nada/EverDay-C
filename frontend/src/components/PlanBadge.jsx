@@ -13,12 +13,6 @@ const PLAN_STYLES = {
     color: '#b45309',
     label: 'Plus plan',
   },
-  pro: {
-    border: '#86efac',
-    background: '#ecfdf3',
-    color: '#15803d',
-    label: 'Pro plan',
-  },
 };
 
 const PlanBadge = () => {

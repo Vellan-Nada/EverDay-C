@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar.jsx';
 import DonationButton from '../components/DonationButton.jsx';
@@ -10,16 +10,18 @@ import { useGuest } from '../context/GuestContext.jsx';
 import { fetchFeatures } from '../api/featureApi.js';
 import { createBillingPortalSession, createCheckoutSession } from '../api/billingApi.js';
 import layoutStyles from '../styles/DashboardLayout.module.css';
+import { supabase } from '../lib/supabaseClient.js';
 
 const DashboardLayout = () => {
   const navigate = useNavigate();
   const { user, token, profile, signOut, authLoading, isPro, planTier } = useAuth();
-  const { guestData } = useGuest();
+  const { guestData, setGuestData } = useGuest();
   const [features, setFeatures] = useState([]);
   const [featureError, setFeatureError] = useState(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const migratedRef = useRef(false);
 
   useEffect(() => {
     const loadFeatures = async () => {
@@ -33,6 +35,29 @@ const DashboardLayout = () => {
     };
     loadFeatures();
   }, []);
+
+  // Migrate guest data into the signed-in account once after login
+  // Migrate guest data into the signed-in account once after login, via backend upsert to avoid duplicates
+  useEffect(() => {
+    const migrate = async () => {
+      if (!user || migratedRef.current) return;
+      if (!guestData || Object.keys(guestData).length === 0) return;
+      try {
+        await fetch('/api/migrate/guest-to-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: user.id, guestData }),
+        });
+      } catch (err) {
+        console.error('Failed to migrate guest data', err);
+      } finally {
+        sessionStorage.removeItem('everday_guest_data');
+        setGuestData({});
+        migratedRef.current = true;
+      }
+    };
+    migrate();
+  }, [user, guestData, setGuestData]);
 
   const handleDonate = async () => {
     if (!token) {
@@ -118,7 +143,7 @@ const DashboardLayout = () => {
               </button>
 
               <h2 style={{ margin: 0, fontSize: '1.6rem' }}>
-                Hey {(profile?.username || profile?.full_name || user?.email || 'there')} 👋
+                Hey {(profile?.username || profile?.full_name || user?.user_metadata?.username || user?.user_metadata?.full_name || 'there')} 👋
               </h2>
             </div>
             <div className={layoutStyles.topActions}>

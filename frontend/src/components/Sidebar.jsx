@@ -11,11 +11,10 @@ const defaultNavItems = [
   { label: 'Notes', path: '/notes' },
   { label: 'To Do List', path: '/tasks' },
   { label: 'Pomodoro', path: '/pomodoro' },
-  { label: 'Reading List', path: '/reading' },
-  { label: 'Movie & Series', path: '/watch' },
   { label: 'Journaling', path: '/journaling' },
   { label: 'Source Dump', path: '/source-dump' },
-  { label: 'AI Helper', path: '/ai' },
+  { label: 'Reading List', path: '/reading' },
+  { label: 'Movie & Series', path: '/watch' },
 ];
 
 const Sidebar = ({

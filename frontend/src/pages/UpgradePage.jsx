@@ -5,9 +5,21 @@ import { createBillingPortalSession, createCheckoutSession } from '../api/billin
 import PlanBadge from '../components/PlanBadge.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 
-const tierRank = { free: 0, plus: 1, pro: 2 };
+const tierRank = { free: 0, plus: 1 };
 
 const PLAN_CARDS = [
+  {
+    tier: 'free',
+    title: 'Free',
+    price: '$0/mo',
+    subtitle: 'Get started with core tools and local saving.',
+    accent: '#f8fafc',
+    features: [
+      'Use all free features locally',
+      'Manual data export/import',
+      'Community support',
+    ],
+  },
   {
     tier: 'plus',
     title: 'Plus',
@@ -19,20 +31,6 @@ const PLAN_CARDS = [
       'Habit + task history',
       'Priority roadmap access',
       'Early access to new tools',
-    ],
-  },
-  {
-    tier: 'pro',
-    title: 'Pro',
-    price: '$15/mo',
-    subtitle: 'Everything in Plus + AI helper superpowers.',
-    accent: '#e0ecff',
-    highlight: true,
-    features: [
-      'AI Helper unlimited prompts',
-      'Saved AI threads with context',
-      'Advanced analytics & insights',
-      'Direct feedback loop with the team',
     ],
   },
 ];
@@ -52,7 +50,7 @@ const UpgradePage = () => {
 
   const startCheckout = async (tier) => {
     if (!ensureSignedIn()) return;
-    if (planTier === 'pro' || planTier === tier) return;
+    if (planTier === tier) return;
     try {
       setStatus((prev) => ({ ...prev, checkout: tier, error: null }));
       const { url } = await createCheckoutSession('subscription', token, tier);
@@ -108,14 +106,14 @@ const UpgradePage = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '1rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '1.25rem',
         }}
       >
         {PLAN_CARDS.map((plan) => {
           const isCurrent = planTier === plan.tier;
           const alreadyIncluded = planRank > tierRank[plan.tier];
-          const disabled = isCurrent || alreadyIncluded || status.checkout === plan.tier;
+          const disabled = isCurrent || alreadyIncluded || status.checkout === plan.tier || plan.tier === 'free';
           return (
             <div
               key={plan.tier}
@@ -167,11 +165,7 @@ const UpgradePage = () => {
                     ? 'Included in your plan'
                     : status.checkout === plan.tier
                     ? 'Redirecting…'
-                    : plan.tier === 'plus'
-                    ? 'Upgrade to Plus'
-                    : planTier === 'plus'
-                    ? 'Upgrade to Pro'
-                    : 'Go Pro'}
+                    : 'Upgrade to Plus'}
                 </button>
               )}
               {isCurrent && formattedExpiry && (

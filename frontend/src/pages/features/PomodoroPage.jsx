@@ -64,6 +64,23 @@ const modeToSeconds = (mode, settings) => {
   }
 };
 
+const readSettingsFromStorage = () => {
+  try {
+    const raw = localStorage.getItem('everday_pomodoro_settings');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeSettingsToStorage = (settings) => {
+  try {
+    localStorage.setItem('everday_pomodoro_settings', JSON.stringify(settings));
+  } catch {
+    // ignore
+  }
+};
+
 // Per-mode timer state
 const getStoredTimerState = () => {
   try {
@@ -89,7 +106,8 @@ const PomodoroPage = () => {
   const guestMode = !user;
   const stored = useRef(getStoredTimerState()).current;
   const [hydrated, setHydrated] = useState(false);
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const storedSettings = readSettingsFromStorage();
+  const [settings, setSettings] = useState(storedSettings ? { ...DEFAULT_SETTINGS, ...storedSettings } : DEFAULT_SETTINGS);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [mode, setMode] = useState(stored.activeMode || 'pomodoro');
@@ -123,7 +141,8 @@ const PomodoroPage = () => {
   useEffect(() => {
     if (authLoading) return;
     if (guestMode) {
-      setSettings(DEFAULT_SETTINGS);
+      const fromStorage = readSettingsFromStorage();
+      setSettings(fromStorage ? { ...DEFAULT_SETTINGS, ...fromStorage } : DEFAULT_SETTINGS);
       setHydrated(true);
       return;
     }
@@ -378,6 +397,7 @@ const PomodoroPage = () => {
       if (guestMode) {
         const merged = { ...DEFAULT_SETTINGS, ...nextSettings };
         setSettings(merged);
+        writeSettingsToStorage(merged);
         if (!isRunning) setSecondsLeft(modeToSeconds(mode, merged));
         setSettingsOpen(false);
       } else {
@@ -388,10 +408,12 @@ const PomodoroPage = () => {
           .select()
           .single();
         if (upsertError) throw upsertError;
-        setSettings({ ...DEFAULT_SETTINGS, ...data });
+        const merged = { ...DEFAULT_SETTINGS, ...data };
+        setSettings(merged);
+        writeSettingsToStorage(merged);
         // If timer is idle, reset duration to match mode
         if (!isRunning) {
-          setSecondsLeft(modeToSeconds(mode, { ...DEFAULT_SETTINGS, ...data }));
+          setSecondsLeft(modeToSeconds(mode, merged));
         }
         setSettingsOpen(false);
       }
