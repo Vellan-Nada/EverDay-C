@@ -36,18 +36,24 @@ const DashboardLayout = () => {
     loadFeatures();
   }, []);
 
-  // Migrate guest data into the signed-in account once after login
   // Migrate guest data into the signed-in account once after login, via backend upsert to avoid duplicates
   useEffect(() => {
     const migrate = async () => {
       if (!user || migratedRef.current) return;
       if (!guestData || Object.keys(guestData).length === 0) return;
       try {
-        await fetch('/api/migrate/guest-to-user', {
+        const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+        const res = await fetch(`${apiBase}/migrate/guest-to-user`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id: user.id, guestData }),
         });
+        if (!res.ok) {
+          console.error('Failed to migrate guest data', await res.text());
+          return;
+        }
+        // refresh data after migration
+        window.location.reload();
       } catch (err) {
         console.error('Failed to migrate guest data', err);
       } finally {
