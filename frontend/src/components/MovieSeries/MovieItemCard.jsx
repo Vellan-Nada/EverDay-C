@@ -13,7 +13,7 @@ const MovieItemCard = ({ item, isPremium, onEdit, onDelete, onMove, onChangeColo
   const [colorOpen, setColorOpen] = useState(false);
   const [lockedMessage, setLockedMessage] = useState(false);
 
-  const bg = item.card_color ?? '#ffffffff';
+  const bg = item.card_color ?? '#f8fafc';
 
   const handleColorClick = () => {
     if (!isPremium) {

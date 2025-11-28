@@ -33,6 +33,19 @@
   color: var(--text-muted);
 }
 
+.habit-alert {
+  border-radius: 0.9rem;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  background: rgba(248, 113, 113, 0.1);
+  padding: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
+
 .habit-subheader-right {
   display: flex;
   align-items: center;

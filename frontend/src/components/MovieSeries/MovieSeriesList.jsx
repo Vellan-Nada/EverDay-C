@@ -7,6 +7,7 @@ import MovieItemModal from './MovieItemModal.jsx';
 import MovieItemCard from './MovieItemCard.jsx';
 import '../../styles/MovieSeries.css';
 import { goToSignup } from '../../utils/guestSignup.js';
+import UpgradeToPremium from '../Notes/UpgradeToPremium.jsx';
 
 const STATUS_LABELS = {
   to_watch: 'Movie / Series to watch',
@@ -240,34 +241,44 @@ const MovieSeriesList = () => {
         <LoadingSpinner label="Fetching items…" />
       ) : (
         <div className="movie-columns">
-          {['to_watch', 'watching', 'watched'].map((status) => (
-            <div key={status} className="movie-column">
-              <button
-                type="button"
-                className="movie-btn primary movie-column-header"
-                onClick={() => openAdd(status)}
-              >
-                + {STATUS_LABELS[status]}
-              </button>
-              {grouped[status]?.length ? (
-                <div className="movie-list">
-                  {grouped[status].map((item) => (
-                    <MovieItemCard
-                      key={item.id}
-                      item={item}
-                      isPremium={isPremium}
-                      onEdit={openEdit}
-                      onDelete={handleDelete}
-                      onMove={handleMove}
-                      onChangeColor={handleColor}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className="movie-empty">No entries yet.</p>
-              )}
-            </div>
-          ))}
+          {['to_watch', 'watching', 'watched'].map((status) => {
+            const count = grouped[status]?.length || 0;
+            const freeLimitReached = !isPremium && count >= FREE_LIMIT_PER_STATUS;
+            return (
+              <div key={status} className="movie-column">
+                <button
+                  type="button"
+                  className="movie-btn primary movie-column-header"
+                  onClick={() => openAdd(status)}
+                >
+                  + {STATUS_LABELS[status]}
+                </button>
+                {freeLimitReached && (
+                  <div className="movie-alert">
+                    <p>Free plan limit reached ({FREE_LIMIT_PER_STATUS} items). Upgrade to add more.</p>
+                    {!isPremium && <UpgradeToPremium variant="compact" />}
+                  </div>
+                )}
+                {grouped[status]?.length ? (
+                  <div className="movie-list">
+                    {grouped[status].map((item) => (
+                      <MovieItemCard
+                        key={item.id}
+                        item={item}
+                        isPremium={isPremium}
+                        onEdit={openEdit}
+                        onDelete={handleDelete}
+                        onMove={handleMove}
+                        onChangeColor={handleColor}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="movie-empty">No entries yet.</p>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 

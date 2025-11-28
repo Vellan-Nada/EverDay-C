@@ -246,6 +246,8 @@ const ReadingList = () => {
             onAdd={openCreate}
             onChangeColor={handleColor}
             isPremium={isPremium}
+            freeLimitReached={!isPremium && (grouped.want_to_read?.length || 0) >= FREE_LIMIT_PER_STATUS}
+            freeLimit={FREE_LIMIT_PER_STATUS}
           />
           <StatusColumn
             title={STATUS_LABELS.reading}
@@ -257,6 +259,8 @@ const ReadingList = () => {
             onAdd={openCreate}
             onChangeColor={handleColor}
             isPremium={isPremium}
+            freeLimitReached={!isPremium && (grouped.reading?.length || 0) >= FREE_LIMIT_PER_STATUS}
+            freeLimit={FREE_LIMIT_PER_STATUS}
           />
           <StatusColumn
             title={STATUS_LABELS.finished}
@@ -268,6 +272,8 @@ const ReadingList = () => {
             onAdd={openCreate}
             onChangeColor={handleColor}
             isPremium={isPremium}
+            freeLimitReached={!isPremium && (grouped.finished?.length || 0) >= FREE_LIMIT_PER_STATUS}
+            freeLimit={FREE_LIMIT_PER_STATUS}
           />
         </div>
       )}

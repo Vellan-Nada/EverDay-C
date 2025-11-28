@@ -237,7 +237,7 @@ const NotesPage = () => {
 
       {limitReached && (
         <div className="notes-upgrade-callout">
-          <span>You’ve hit the 40-note limit on the free plan. Upgrade for unlimited notes and colors.</span>
+          <span>You’ve hit the 15-note limit on the free plan. Upgrade for unlimited notes and colors.</span>
           <UpgradeToPremium />
         </div>
       )}

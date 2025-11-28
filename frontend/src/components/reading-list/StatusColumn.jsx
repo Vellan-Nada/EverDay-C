@@ -1,6 +1,7 @@
 import BookCard from './BookCard.jsx';
+import UpgradeToPremium from '../Notes/UpgradeToPremium.jsx';
 
-const StatusColumn = ({ title, statusId, items, onEdit, onDelete, onMove, onAdd, onChangeColor, isPremium }) => {
+const StatusColumn = ({ title, statusId, items, onEdit, onDelete, onMove, onAdd, onChangeColor, isPremium, freeLimitReached, freeLimit }) => {
   return (
     <div className="reading-column">
       <div className="reading-column-header">
@@ -8,6 +9,12 @@ const StatusColumn = ({ title, statusId, items, onEdit, onDelete, onMove, onAdd,
           + {title}
         </button>
       </div>
+      {freeLimitReached && (
+        <div className="reading-alert">
+          <p>Free plan limit reached ({freeLimit} items). Upgrade to add more.</p>
+          {!isPremium && <UpgradeToPremium variant="compact" cta="Upgrade to Premium" />}
+        </div>
+      )}
       {items.length === 0 ? (
         <p className="reading-empty">No books here yet.</p>
       ) : (

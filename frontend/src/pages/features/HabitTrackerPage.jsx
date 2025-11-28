@@ -307,6 +307,13 @@ const HabitTrackerPage = () => {
         </button>
       </div>
 
+      {limitReached && !isPremium && (
+        <div className="habit-alert">
+          <p>Free plan limit reached (7 items). Upgrade to add more.</p>
+          <UpgradeToPremium variant="compact" />
+        </div>
+      )}
+
       {!user && (
         <div className="info-toast" style={{ marginBottom: '0.75rem' }}>
           You’re in guest mode. Habits won’t be saved if you leave.{' '}

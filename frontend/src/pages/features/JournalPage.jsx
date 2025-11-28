@@ -9,10 +9,13 @@ import JournalEntryModal from '../../components/Journal/JournalEntryModal.jsx';
 import JournalReport from '../../components/Journal/JournalReport.jsx';
 import PremiumUpsell from '../../components/Journal/PremiumUpsell.jsx';
 import '../../styles/Journal.css';
+import { createCheckoutSession } from '../../api/billingApi.js';
+import { useNavigate } from 'react-router-dom';
 import { goToSignup } from '../../utils/guestSignup.js';
 
 const JournalPage = () => {
-  const { user, profile, authLoading, profileLoading } = useAuth();
+  const navigate = useNavigate();
+  const { user, token, profile, authLoading, profileLoading } = useAuth();
   const { guestData, setGuestData } = useGuest();
   const [month, setMonth] = useState(new Date().getMonth());
   const [year, setYear] = useState(new Date().getFullYear());
@@ -170,12 +173,13 @@ const JournalPage = () => {
   };
 
   const startUpgrade = async () => {
+    if (!token) {
+      navigate('/signup');
+      return;
+    }
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { tier: 'pro' },
-      });
-      if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      const { url } = await createCheckoutSession('subscription', token, 'plus');
+      window.location.href = url;
     } catch (err) {
       alert('Unable to start checkout.');
     }

@@ -44,7 +44,7 @@ const AddNoteForm = ({
         <div className="notes-form-actions">
           <div className="notes-form-meta">
             {limitReached && !isPremium && (
-              <span className="notes-form-warning">Free plan limit reached (40 notes). Upgrade to add more.</span>
+              <span className="notes-form-warning">Free plan limit reached (15 notes). Upgrade to add more.</span>
             )}
             {error && <span className="notes-form-error">{error}</span>}
           </div>
