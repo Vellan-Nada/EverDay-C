@@ -52,7 +52,7 @@ const MovieSeriesList = () => {
           .from('movie_items')
           .select('*')
           .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: true });
         if (fetchError) throw fetchError;
         setItems(data || []);
         setError(null);
@@ -113,8 +113,8 @@ const MovieSeriesList = () => {
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           };
-          setItems((prev) => [newItem, ...prev]);
-          setGuestData((prev) => ({ ...prev, movieItems: [newItem, ...(prev.movieItems || [])] }));
+          setItems((prev) => [...prev, newItem]);
+          setGuestData((prev) => ({ ...prev, movieItems: [...(prev.movieItems || []), newItem] }));
         } else if (editingItem) {
           const updated = { ...editingItem, ...payload, updated_at: new Date().toISOString() };
           setItems((prev) => prev.map((it) => (it.id === editingItem.id ? updated : it)));
@@ -143,7 +143,7 @@ const MovieSeriesList = () => {
           .select()
           .single();
         if (insertError) throw insertError;
-        setItems((prev) => [data, ...prev]);
+        setItems((prev) => [...prev, data]);
       } else if (editingItem) {
         const { data, error: updateError } = await supabase
           .from('movie_items')
@@ -189,6 +189,14 @@ const MovieSeriesList = () => {
   };
 
   const handleMove = async (item, status) => {
+    if (item.status === status) return;
+    const targetCount = grouped[status]?.length || 0;
+    if (!isPremium && targetCount >= FREE_LIMIT_PER_STATUS) {
+      setLimitAlerts((prev) => ({ ...prev, [status]: true }));
+      setError(`Free plan limit reached (${FREE_LIMIT_PER_STATUS} items). Upgrade to add more.`);
+      return;
+    }
+
     if (guestMode) {
       const updated = { ...item, status, updated_at: new Date().toISOString() };
       setItems((prev) => prev.map((i) => (i.id === item.id ? updated : i)));

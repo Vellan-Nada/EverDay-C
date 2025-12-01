@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth.js';
 const STATUS_COPY = {
   success: {
     title: 'Payment confirmed 🎉',
-    description: 'Your EverDay Pro plan is now active. You can close this tab or return to the dashboard.',
+    description: 'Your EverDay Plus plan is now active. You can return to the dashboard.',
     action: 'Return to dashboard',
   },
   cancel: {

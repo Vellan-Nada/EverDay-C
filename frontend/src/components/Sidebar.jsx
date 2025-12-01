@@ -119,13 +119,7 @@ const Sidebar = ({
     }
   };
 
-  const showUpgradeCta = planTier !== 'pro';
-  const ctaTitle = planTier === 'plus' ? 'Ready for AI superpowers?' : 'Unlock EverDay Pro';
-  const ctaDescription =
-    planTier === 'plus'
-      ? 'Upgrade to Pro for AI helper access and saved threads.'
-      : 'Get AI helper boosts, deep insights, and data backups.';
-  const ctaButton = planTier === 'plus' ? 'Go Pro' : 'See plans';
+  const showUpgradeCta = false;
 
   return (
     <aside className={`${styles.sidebar} ${isMobileOpen ? styles.sidebarOpen : ''}`}>

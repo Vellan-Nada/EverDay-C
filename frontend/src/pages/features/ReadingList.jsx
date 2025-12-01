@@ -177,6 +177,14 @@ const ReadingList = () => {
   };
 
   const handleMove = async (item, status) => {
+    if (item.status === status) return;
+    const targetCount = grouped[status]?.length || 0;
+    if (!isPremium && targetCount >= FREE_LIMIT_PER_STATUS) {
+      setLimitAlerts((prev) => ({ ...prev, [status]: true }));
+      setError(`Free plan limit reached (${FREE_LIMIT_PER_STATUS} items). Upgrade to add more.`);
+      return;
+    }
+
     if (guestMode) {
       const updated = { ...item, status, updated_at: new Date().toISOString() };
       setItems((prev) => prev.map((i) => (i.id === item.id ? updated : i)));

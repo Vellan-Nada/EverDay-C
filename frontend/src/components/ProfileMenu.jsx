@@ -47,8 +47,8 @@ const ProfileMenu = ({ onUpgradeClick = () => {}, onManageSubscription = () => {
     user.user_metadata?.full_name ||
     'there';
   const planLabel = planLabels[planTier] || planLabels.free;
-  const showUpgradeAction = planTier === 'free' || planTier === 'plus';
-  const upgradeLabel = planTier === 'plus' ? 'Upgrade to Pro' : 'Upgrade plan';
+  const showUpgradeAction = planTier === 'free';
+  const upgradeLabel = 'Upgrade to Plus';
   const showManageSubscription = planTier !== 'free';
 
   const handleManage = () => {

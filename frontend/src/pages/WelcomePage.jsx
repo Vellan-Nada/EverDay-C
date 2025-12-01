@@ -5,9 +5,20 @@ const WelcomePage = () => {
 
   return (
     <article style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      <header style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+      <header
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.4rem',
+          background: 'var(--card-muted)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius)',
+          padding: '1.25rem 1.4rem',
+          backgroundColor: '#dce3f7ff',
+        }}
+      >
         <h1 style={{ marginBottom: 0, fontSize: '1.6rem' }}>Welcome to EverDay</h1>
-        <p style={{ color: 'var(--text-muted)', maxWidth: '720px' }}>
+        <p style={{ color: 'black', maxWidth: '720px', marginTop: '15px' }}>
           EverDay unifies your habits, notes, todos, focus cycles, inspiration and thoughts into one calm workspace.
           Use the navigation to explore each tool. Your data is saved when you sign in.
         </p>
