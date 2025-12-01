@@ -26,6 +26,11 @@ const ReadingList = () => {
   const [modalMode, setModalMode] = useState('create');
   const [defaultStatus, setDefaultStatus] = useState('want_to_read');
   const [activeItem, setActiveItem] = useState(null);
+  const [limitAlerts, setLimitAlerts] = useState({
+    want_to_read: false,
+    reading: false,
+    finished: false,
+  });
 
   const guestMode = !user;
   const isPremium = guestMode ? false : Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
@@ -66,13 +71,26 @@ const ReadingList = () => {
     finished: items.filter((i) => i.status === 'finished'),
   }), [items]);
 
+  useEffect(() => {
+    // reset alerts when counts drop below limit
+    setLimitAlerts((prev) => {
+      const next = { ...prev };
+      ['want_to_read', 'reading', 'finished'].forEach((status) => {
+        const count = grouped[status]?.length || 0;
+        if (count < FREE_LIMIT_PER_STATUS) next[status] = false;
+      });
+      return next;
+    });
+  }, [grouped]);
+
   const openCreate = (status) => {
     const count = grouped[status]?.length || 0;
     const isFreeLimitReached = !isPremium && count >= FREE_LIMIT_PER_STATUS;
     if (isFreeLimitReached) {
-      setError(`Free plan limit reached (${FREE_LIMIT_PER_STATUS} items). Upgrade to add more.`);
+      setLimitAlerts((prev) => ({ ...prev, [status]: true }));
       return;
     }
+    setLimitAlerts((prev) => ({ ...prev, [status]: false }));
     setModalMode('create');
     setDefaultStatus(status);
     setActiveItem(null);
@@ -248,6 +266,7 @@ const ReadingList = () => {
             isPremium={isPremium}
             freeLimitReached={!isPremium && (grouped.want_to_read?.length || 0) >= FREE_LIMIT_PER_STATUS}
             freeLimit={FREE_LIMIT_PER_STATUS}
+            showLimit={limitAlerts.want_to_read}
           />
           <StatusColumn
             title={STATUS_LABELS.reading}
@@ -261,6 +280,7 @@ const ReadingList = () => {
             isPremium={isPremium}
             freeLimitReached={!isPremium && (grouped.reading?.length || 0) >= FREE_LIMIT_PER_STATUS}
             freeLimit={FREE_LIMIT_PER_STATUS}
+            showLimit={limitAlerts.reading}
           />
           <StatusColumn
             title={STATUS_LABELS.finished}
@@ -274,6 +294,7 @@ const ReadingList = () => {
             isPremium={isPremium}
             freeLimitReached={!isPremium && (grouped.finished?.length || 0) >= FREE_LIMIT_PER_STATUS}
             freeLimit={FREE_LIMIT_PER_STATUS}
+            showLimit={limitAlerts.finished}
           />
         </div>
       )}

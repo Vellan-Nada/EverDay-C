@@ -74,6 +74,7 @@ const HabitTrackerPage = () => {
   const [showStreak, setShowStreak] = useState(false);
   const [modalState, setModalState] = useState({ open: false, habit: null });
   const [limitReached, setLimitReached] = useState(false);
+   const [showLimitAlert, setShowLimitAlert] = useState(false);
   const [dates, setDates] = useState([]);
   const [streakPromptVisible, setStreakPromptVisible] = useState(false);
 
@@ -92,6 +93,9 @@ const HabitTrackerPage = () => {
       const decorated = activeHabits.map((habit) => decorateHabit(habit, logs[habit.id] || {}, range));
       setDates(range);
       setLimitReached(!premiumFlag && decorated.length >= 7);
+      if (!premiumFlag && decorated.length < 7) {
+        setShowLimitAlert(false);
+      }
       setHabits(decorated);
       setHistory(deletedHabits);
       setLogMap(logs);
@@ -255,6 +259,13 @@ const HabitTrackerPage = () => {
   };
 
   const handleRestoreHabit = async (habit) => {
+    const activeCount = habits.length;
+    if (!isPremium && activeCount >= 7) {
+      setLimitReached(true);
+      setShowLimitAlert(true);
+      return;
+    }
+
     if (guestMode) {
       const combined = [...habits, ...history];
       const nextHabits = combined.map((h) => (h.id === habit.id ? { ...h, is_deleted: false } : h));
@@ -262,6 +273,7 @@ const HabitTrackerPage = () => {
       recompute(nextHabits, logMap, false);
       return;
     }
+
     await supabase.from('habits').update({ is_deleted: false }).eq('id', habit.id);
     await loadHabits();
   };
@@ -302,12 +314,22 @@ const HabitTrackerPage = () => {
         <div>
           <h1>Habit Tracker</h1>
         </div>
-        <button type="button" onClick={() => setModalState({ open: true, habit: null })} disabled={limitReached}>
+        <button
+          type="button"
+          onClick={() => {
+            if (limitReached && !isPremium) {
+              setShowLimitAlert(true);
+              return;
+            }
+            setShowLimitAlert(false);
+            setModalState({ open: true, habit: null });
+          }}
+        >
           + Add Habit
         </button>
       </div>
 
-      {limitReached && !isPremium && (
+      {limitReached && showLimitAlert && !isPremium && (
         <div className="habit-alert">
           <p>Free plan limit reached (7 items). Upgrade to add more.</p>
           <UpgradeToPremium variant="compact" />

@@ -23,6 +23,7 @@ const NotesPage = () => {
   const [editDraft, setEditDraft] = useState({ title: '', content: '' });
   const [colorSavingId, setColorSavingId] = useState(null);
   const [globalError, setGlobalError] = useState(null);
+  const [showLimitAlert, setShowLimitAlert] = useState(false);
 
   const guestMode = !user;
   const isPremium = guestMode ? false : Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
@@ -73,7 +74,11 @@ const NotesPage = () => {
   };
 
   const handleAddNote = async () => {
-    if (limitReached) return;
+    if (limitReached) {
+      setShowLimitAlert(true);
+      return;
+    }
+    setShowLimitAlert(false);
     const payload = {
       title: form.title.trim() || null,
       content: form.content.trim() || null,
@@ -228,17 +233,17 @@ const NotesPage = () => {
         onChange={(field, value) => setForm((prev) => ({ ...prev, [field]: value }))}
         onSubmit={handleAddNote}
         onCancel={resetForm}
-        disabled={limitReached}
-        limitReached={limitReached}
+        disabled={adding}
+        limitReached={showLimitAlert && limitReached}
         isPremium={isPremium}
         error={addError}
         loading={adding}
       />
 
-      {limitReached && (
+      {limitReached && showLimitAlert && (
         <div className="notes-upgrade-callout">
-          <span>You’ve hit the 15-note limit on the free plan. Upgrade for unlimited notes and colors.</span>
-          <UpgradeToPremium />
+          <span>Free plan limit reached (15 items). Upgrade to add more.</span>
+          <UpgradeToPremium variant="full" cta="Upgrade to Premium" />
         </div>
       )}
 

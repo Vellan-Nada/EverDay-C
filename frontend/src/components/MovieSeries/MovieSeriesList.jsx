@@ -28,6 +28,11 @@ const MovieSeriesList = () => {
   const [modalStatus, setModalStatus] = useState('to_watch');
   const [editingItem, setEditingItem] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [limitAlerts, setLimitAlerts] = useState({
+    to_watch: false,
+    watching: false,
+    watched: false,
+  });
 
   const guestMode = !user;
   const isPremium = guestMode ? false : Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
@@ -74,9 +79,10 @@ const MovieSeriesList = () => {
     const count = grouped[status]?.length || 0;
     const isFreeLimitReached = !isPremium && count >= FREE_LIMIT_PER_STATUS;
     if (isFreeLimitReached) {
-      setError(`Free plan limit reached (${FREE_LIMIT_PER_STATUS} items). Upgrade to add more.`);
+      setLimitAlerts((prev) => ({ ...prev, [status]: true }));
       return;
     }
+    setLimitAlerts((prev) => ({ ...prev, [status]: false }));
     setModalMode('add');
     setModalStatus(status);
     setEditingItem(null);
@@ -221,6 +227,17 @@ const MovieSeriesList = () => {
     setItems((prev) => prev.map((i) => (i.id === item.id ? data : i)));
   };
 
+  useEffect(() => {
+    setLimitAlerts((prev) => {
+      const next = { ...prev };
+      ['to_watch', 'watching', 'watched'].forEach((status) => {
+        const count = grouped[status]?.length || 0;
+        if (count < FREE_LIMIT_PER_STATUS) next[status] = false;
+      });
+      return next;
+    });
+  }, [grouped]);
+
   if (authLoading || profileLoading) return <LoadingSpinner label="Loading movie list…" />;
 
   return (
@@ -253,7 +270,7 @@ const MovieSeriesList = () => {
                 >
                   + {STATUS_LABELS[status]}
                 </button>
-                {freeLimitReached && (
+                {freeLimitReached && limitAlerts[status] && (
                   <div className="movie-alert">
                     <p>Free plan limit reached ({FREE_LIMIT_PER_STATUS} items). Upgrade to add more.</p>
                     {!isPremium && <UpgradeToPremium variant="compact" />}

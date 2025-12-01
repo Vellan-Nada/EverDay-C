@@ -99,14 +99,6 @@ const TodoSection = ({
           ))}
         </div>
       )}
-      {isFreeLimitReached && !adding && (
-        <div className="todo-limit-message">
-          <p>
-            Free plan limit reached ({freeLimit} items). <br />Upgrade to keep this list growing.
-          </p>
-          <UpgradeToPremium variant="full" />
-        </div>
-      )}
     </section>
   );
 };

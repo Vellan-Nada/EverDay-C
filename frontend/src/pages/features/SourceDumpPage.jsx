@@ -8,6 +8,7 @@ import SourceCard from '../../components/SourceDump/SourceCard.jsx';
 import SourceDumpDetailModal from '../../components/SourceDump/SourceDumpDetailModal.jsx';
 import '../../styles/SourceDump.css';
 import { goToSignup } from '../../utils/guestSignup.js';
+import UpgradeToPremium from '../../components/Notes/UpgradeToPremium.jsx';
 
 const SourceDumpPage = () => {
   const { user, profile, authLoading, profileLoading } = useAuth();
@@ -18,10 +19,17 @@ const SourceDumpPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [activeItem, setActiveItem] = useState(null);
   const [detailItem, setDetailItem] = useState(null);
+  const [showLimitAlert, setShowLimitAlert] = useState(false);
   const guestMode = !user;
   const isPremium = guestMode ? false : Boolean(profile?.is_premium) || ['plus', 'pro'].includes(profile?.plan);
   const FREE_LIMIT = 7;
   const limitReached = !isPremium && items.length >= FREE_LIMIT;
+
+  useEffect(() => {
+    if (items.length < FREE_LIMIT) {
+      setShowLimitAlert(false);
+    }
+  }, [items.length]);
 
   useEffect(() => {
     if (authLoading || profileLoading) return;
@@ -183,10 +191,11 @@ const SourceDumpPage = () => {
           className="sd-btn primary"
           onClick={() => {
             if (limitReached) {
-              setError(`Free plan limit reached (${FREE_LIMIT} items). Upgrade to add more.`);
+              setShowLimitAlert(true);
               return;
             }
             setError(null);
+            setShowLimitAlert(false);
             setActiveItem(null);
             setModalOpen(true);
           }}
@@ -194,6 +203,12 @@ const SourceDumpPage = () => {
           + Add source
         </button>
       </div>
+      {showLimitAlert && limitReached && (
+        <div className="sd-alert">
+          <p>Free plan limit reached ({FREE_LIMIT} items). Upgrade to add more.</p>
+          {!isPremium && <UpgradeToPremium variant="compact" />}
+        </div>
+      )}
       {error && <p className="sd-error">{error}</p>}
       {items.length === 0 ? (
         <div className="sd-empty">No sources yet. Click “+” to dump your first links, notes, or screenshots.</div>
