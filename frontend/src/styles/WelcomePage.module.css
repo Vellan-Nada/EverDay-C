@@ -50,6 +50,8 @@
 }
 
 .toolCard {
+  min-height: 160px;
+  height: 100%;
   border-radius: 18px;
   background: #eef2ff;
   border: 1px solid rgba(59, 130, 246, 0.15);
@@ -159,5 +161,9 @@
 
   .cardGrid {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .toolCard {
+    min-height: 180px;
   }
 }

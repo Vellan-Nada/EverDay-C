@@ -51,21 +51,57 @@
   align-items: center;
   gap: 1rem;
 }
-.streak-lock {
+
+.toggleWrap {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
+  color: #0f172a;
+  font-weight: 600;
 }
-.streak-lock-wrapper {
-  position: relative;
-}
-.streak-lock-btn {
+
+.toggle {
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
   border: 1px solid var(--border);
-  background: #f8fafc;
-  border-radius: 0.35rem;
-  padding: 0.25rem 0.5rem;
-  cursor: pointer;
+  background: #1f2937;
+  position: relative;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
+
+.toggle .toggle-knob {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  position: absolute;
+  left: 1px;
+  top: 1px;
+  transition: transform 0.2s ease;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+}
+
+.toggle.on {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  justify-content: flex-end;
+}
+
+.toggle.on .toggle-knob {
+  transform: translateX(20px);
+}
+
+.toggle.disabled {
+  background: #e5e7eb;
+  border-color: #e5e7eb;
+  cursor: not-allowed;
+}
+
 .streak-lock-pop {
   position: absolute;
   top: 140%;
@@ -84,10 +120,10 @@
   gap: 0.5rem;
 }
 
-.habit-subheader label {
+.streak-lock-wrapper {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.35rem;
 }
 
 .habit-table-wrapper {

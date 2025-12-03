@@ -327,17 +327,27 @@ const HabitTrackerPage = () => {
 
       <div className="habit-subheader">
         <div className="habit-subheader-right">
-          <div className="streak-lock">
-            {!isPremium ? (
+          <div className="toggleWrap">
+            <span>Streak</span>
+            {isPremium ? (
+              <button
+                type="button"
+                className={`toggle ${showStreak ? 'on' : ''}`}
+                onClick={() => setShowStreak((prev) => !prev)}
+                aria-pressed={showStreak}
+              >
+                <span className="toggle-knob" />
+              </button>
+            ) : (
               <div className="streak-lock-wrapper">
                 <button
                   type="button"
-                  className="streak-lock-btn"
-                  onClick={() => setStreakPromptVisible((prev) => !prev)}
+                  className="toggle disabled"
+                  onClick={() => setStreakPromptVisible(true)}
+                  aria-label="Streak is a premium feature"
                 >
-                  🔒
+                  <span className="toggle-knob" />
                 </button>
-                <span>Streak</span>
                 {streakPromptVisible && (
                   <div className="streak-lock-pop">
                     <p style={{ marginTop: 0, marginBottom: '0.75rem', textAlign: 'left' }}>
@@ -356,23 +366,19 @@ const HabitTrackerPage = () => {
                   </div>
                 )}
               </div>
-            ) : (
-              <>
-                <span>Streak</span>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={showStreak}
-                    onChange={() => setShowStreak((prev) => !prev)}
-                  />
-                </label>
-              </>
             )}
           </div>
-          <label>
-            <input type="checkbox" checked={showIcons} onChange={() => setShowIcons((prev) => !prev)} />
-            Icons
-          </label>
+          <div className="toggleWrap">
+            <span>Icons</span>
+            <button
+              type="button"
+              className={`toggle ${showIcons ? 'on' : ''}`}
+              onClick={() => setShowIcons((prev) => !prev)}
+              aria-pressed={showIcons}
+            >
+              <span className="toggle-knob" />
+            </button>
+          </div>
         </div>
       </div>
 
