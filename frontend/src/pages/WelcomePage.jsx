@@ -1,49 +1,91 @@
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth.js';
+import styles from '../styles/WelcomePage.module.css';
 
 const WelcomePage = () => {
   const { features = [] } = useOutletContext() || {};
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const iconMap = {
+    habit: '✓',
+    habits: '✓',
+    notes: '✎',
+    tasks: '☑',
+    todos: '☑',
+    pomodoro: '⏲',
+    reading: '▤',
+    watch: '▶',
+    journaling: '✎',
+    journal: '✎',
+    sourceDump: '▢',
+    'source-dump': '▢',
+  };
+  const routeMap = {
+    habits: '/habits',
+    habit: '/habits',
+    notes: '/notes',
+    todos: '/tasks',
+    tasks: '/tasks',
+    pomodoro: '/pomodoro',
+    reading: '/reading',
+    watch: '/watch',
+    journaling: '/journaling',
+    journal: '/journaling',
+    sourceDump: '/source-dump',
+    'source-dump': '/source-dump',
+  };
+
+  const ordering = {
+    habits: 0,
+    notes: 1,
+    todos: 2,
+    pomodoro: 3,
+    sourceDump: 4,
+    journaling: 5,
+    reading: 6,
+    watch: 7,
+  };
+
+  const sortedFeatures = [...features].sort((a, b) => {
+    const aKey = a.key;
+    const bKey = b.key;
+    const aOrder = ordering[aKey] ?? Number.MAX_SAFE_INTEGER;
+    const bOrder = ordering[bKey] ?? Number.MAX_SAFE_INTEGER;
+    return aOrder - bOrder;
+  });
 
   return (
-    <article style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      <header
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.4rem',
-          background: 'var(--card-muted)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius)',
-          padding: '1.25rem 1.4rem',
-          backgroundColor: '#dce3f7ff',
-        }}
-      >
-        <h1 style={{ marginBottom: 0, fontSize: '1.6rem' }}>Welcome to EverDay</h1>
-        <p style={{ color: 'black', maxWidth: '720px', marginTop: '15px' }}>
-          EverDay unifies your habits, notes, todos, focus cycles, inspiration and thoughts into one calm workspace.
-          Use the navigation to explore each tool. Your data is saved when you sign in.
+    <article className={styles.page}>
+      <header className={styles.hero}>
+        {user && <span className={styles.heroBadge}>Welcome back!</span>}
+        <h1>Welcome to EverDay</h1>
+        <p>
+          EverDay unifies your habits, notes, todos, focus cycles, inspiration and thoughts into one calm workspace. Use
+          the navigation to explore each tool. Your data is saved when you sign in.
         </p>
       </header>
-      <section
-        style={{
-          display: 'grid',
-          gap: '1rem',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-        }}
-      >
-        {features.map((feature) => (
+
+      <section className={styles.cardGrid}>
+        {sortedFeatures.map((feature) => (
           <div
             key={feature.key}
-            style={{
-              borderRadius: 'var(--radius)',
-              background: 'var(--card-muted)',
-              padding: '1.25rem',
-              border: '1px solid var(--border)',
+            className={styles.toolCard}
+            role="button"
+            tabIndex={0}
+            onClick={() => routeMap[feature.key] && navigate(routeMap[feature.key])}
+            onKeyDown={(e) => {
+              if ((e.key === 'Enter' || e.key === ' ') && routeMap[feature.key]) {
+                e.preventDefault();
+                navigate(routeMap[feature.key]);
+              }
             }}
           >
-            <h3 style={{ marginTop: 0, marginBottom: '0.35rem', fontSize: '1.1rem' }}>{feature.title}</h3>
-            <p style={{ marginBottom: 0, color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-              {feature.description}
-            </p>
+            <div className={styles.toolAccent} />
+            <div className={`${styles.iconBadge} ${styles[`icon-${feature.key}`] || ''}`}>
+              {iconMap[feature.key] || '⭐'}
+            </div>
+            <h3>{feature.title}</h3>
+            <p>{feature.description}</p>
           </div>
         ))}
       </section>

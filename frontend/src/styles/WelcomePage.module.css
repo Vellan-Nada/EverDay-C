@@ -1,0 +1,163 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding: 0.75rem 1rem 1.75rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.hero {
+  background: #4f46e5;
+  color: #fff;
+  border-radius: 26px;
+  padding: 1.8rem 2rem;
+  box-shadow: 0 0px 20px 1px rgba(15, 23, 42, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.hero p {
+  margin: 0;
+  max-width: 860px;
+  line-height: 1.6;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.heroBadge {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.cardGrid {
+  display: grid;
+  gap: 1.1rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  padding: 0.25rem;
+}
+
+.toolCard {
+  border-radius: 18px;
+  background: #eef2ff;
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+  padding: 1.25rem 1.3rem;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  isolation: isolate;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.toolCard:hover,
+.toolCard:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+}
+
+.toolAccent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(37, 99, 235, 0.08));
+  z-index: 0;
+}
+
+.toolCard h3 {
+  margin: 0.4rem 0 0.2rem;
+  font-size: 1.1rem;
+}
+
+.toolCard p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.iconBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: #0f172a;
+  color: #fff;
+  font-size: 1rem;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
+  z-index: 1;
+}
+
+.icon-habits,
+.icon-habit {
+  background: #0ea5e9;
+}
+
+.icon-notes {
+  background: #a855f7;
+}
+
+.icon-tasks,
+.icon-todos {
+  background: #22c55e;
+}
+
+.icon-pomodoro {
+  background: #f97316;
+}
+
+.icon-sourceDump,
+.icon-source-dump {
+  background: #f59e0b;
+}
+
+.icon-reading {
+  background: #6366f1;
+}
+
+.icon-watch {
+  background: #ec4899;
+}
+
+.icon-journal,
+.icon-journaling {
+  background: #14b8a6;
+}
+
+.icon-source-dump {
+  background: #f59e0b;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    border-radius: 18px;
+    padding: 1.4rem 1.5rem;
+  }
+
+  .hero h1 {
+    font-size: 1.5rem;
+  }
+
+  .cardGrid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
