@@ -1,21 +1,21 @@
 .pillButton {
   position: relative;
-  border: 1px solid var(--border);
-  background: #fff;
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  background: #0ea5e9;
+  color: #f8fafc;
   border-radius: 999px;
-  padding: 0.5rem 0.95rem;
+  padding: 0.55rem 1.05rem;
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  color: var(--accent);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .feedbackButton {
-  border: 1px solid var(--border);
+  border: 1px solid rgba(14, 165, 233, 0.15);
   border-radius: 999px;
-  padding: 0.5rem 1rem;
-  background: #fff;
+  padding: 0.55rem 1.05rem;
+  background: var(--surface);
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -26,17 +26,18 @@
   top: calc(100% + 0.35rem);
   right: 0;
   z-index: 20;
-  background: #fff;
+  background: rgba(11, 18, 36, 0.96);
   border-radius: 0.9rem;
   padding: 0.85rem;
   min-width: 220px;
-  box-shadow: var(--shadow-soft);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  backdrop-filter: blur(10px);
 }
 
 .tooltip p {
   margin: 0 0 0.75rem;
-  color: var(--text-muted);
+  color: rgba(226, 232, 240, 0.86);
   font-size: 0.9rem;
 }
 
@@ -45,7 +46,7 @@
   border: none;
   border-radius: 0.75rem;
   padding: 0.6rem;
-  background: var(--accent);
+  background: #0ea5e9;
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
 }

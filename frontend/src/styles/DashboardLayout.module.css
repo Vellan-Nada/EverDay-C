@@ -2,15 +2,16 @@
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background: #f4f6f8;
+  background: transparent;
 }
 
 .contentArea {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 2rem;
+  padding: 2rem 2.25rem;
   gap: 1.25rem;
+  backdrop-filter: blur(4px);
 }
 
 .topRail {
@@ -21,16 +22,18 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.75rem 1rem;
-  background: #f4f6f8;
-  border-bottom: 1px solid var(--border);
+  padding: 0.95rem 1.05rem;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(14px);
 }
 
 .panel {
   background: transparent;
   border-radius: 0;
   border: none;
-  padding: 0;
+  padding: 1.25rem 0;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -52,10 +55,10 @@
 .menuButton {
   display: none;
   border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  background: #fff;
-  padding: 0.4rem 0.75rem;
-  font-size: 1.1rem;
+  border-radius: 0.9rem;
+  background: var(--surface);
+  padding: 0.5rem 0.8rem;
+  font-size: 1.05rem;
 }
 
 .topActions {
@@ -67,10 +70,11 @@
 
 .secondaryButton {
   border: 1px solid var(--border);
-  border-radius: 0.85rem;
-  background: #fff;
-  padding: 0.55rem 1.2rem;
-  font-weight: 600;
+  border-radius: 0.95rem;
+  background: var(--surface);
+  padding: 0.62rem 1.25rem;
+  font-weight: 700;
+  color: #0b1224;
 }
 
 .tooltipWrapper {
@@ -80,19 +84,18 @@
 
 .tooltipWrapper .tooltip {
   position: absolute;
-  bottom: -38px;
+  bottom: -42px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 0.4rem 0.65rem;
-  border-radius: 0.6rem;
-  background: white;
-  color:black;
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.7rem;
+  background: rgba(11, 18, 36, 0.9);
+  color: #f8fafc;
   white-space: nowrap;
   font-size: 0.85rem;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s ease, transform 0.15s ease;
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18);
 }
 
 .tooltipWrapper:hover .tooltip {
@@ -109,5 +112,24 @@
   }
   .menuButton {
     display: inline-flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .contentArea {
+    padding: 1rem;
+  }
+  .topRail {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+  }
+  .topActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .panel {
+    padding: 1rem 0;
+    border-radius: 0;
   }
 }

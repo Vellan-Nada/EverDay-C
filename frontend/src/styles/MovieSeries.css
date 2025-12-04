@@ -17,11 +17,11 @@
 }
 
 .movie-column {
-  background: #fff;
-  border: 1px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--app-border);
   border-radius: var(--radius);
   padding: 0.85rem;
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--app-shadow);
 }
 
 .movie-column-header {
@@ -80,15 +80,13 @@
 }
 
 .movie-card {
-  border: 1px solid var(--border);
+  border: 1px solid var(--app-border);
   border-radius: 0.9rem;
   padding: 0.75rem;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  transition: box-shadow 0.15s ease, transform 0.1s ease;
+  box-shadow: var(--app-shadow);
 }
 
 .movie-card:hover {
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
 }
 
 .movie-card-body h3 {
@@ -128,22 +126,22 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 1px solid var(--border);
-  background: #fff;
+  border: 1px solid var(--app-border);
+  background: var(--surface);
   font-size: 1rem;
 }
 
 .movie-color-menu {
   position: absolute;
-  background: #fff;
-  border: 1px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--app-border);
   border-radius: 0.75rem;
-  box-shadow: var(--shadow-soft);
   padding: 0.5rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.35rem;
   z-index: 10;
+  box-shadow: var(--app-shadow);
 }
 
 .movie-color-menu button {
@@ -166,14 +164,14 @@
   position: absolute;
   right: 0;
   top: 110%;
-  background: #fff;
-  border: 1px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--app-border);
   border-radius: 0.75rem;
-  box-shadow: var(--shadow-soft);
   display: flex;
   flex-direction: column;
   min-width: 180px;
   z-index: 10;
+  box-shadow: var(--app-shadow);
 }
 
 .movie-move-menu button {
@@ -198,14 +196,15 @@
 }
 
 .movie-modal-content {
-  background: #fff;
+  background: var(--surface);
   border-radius: var(--radius);
   padding: 1rem;
   width: min(640px, 90vw);
-  box-shadow: var(--shadow-soft);
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow);
 }
 
 .movie-modal-header {

@@ -71,19 +71,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
-  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .toggle .toggle-knob {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--surface);
   position: absolute;
   left: 1px;
   top: 1px;
   transition: transform 0.2s ease;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
 }
 
 .toggle.on {
@@ -106,13 +104,13 @@
   position: absolute;
   top: 140%;
   right: 0;
-  background: #fff;
-  border: 1px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--app-border);
   border-radius: var(--radius);
   padding: 0.75rem 0.9rem;
-  box-shadow: var(--shadow-soft);
   width: 220px;
   z-index: 10;
+  box-shadow: var(--app-shadow);
 }
 .streak-pop-actions {
   display: flex;
@@ -127,13 +125,14 @@
 }
 
 .habit-table-wrapper {
-  background: #fff;
+  background: var(--surface);
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: 1px solid var(--app-border);
   overflow: hidden;
   width: 100%;
   max-width: 100%;
   padding-bottom: 0.35rem; /* space for scrollbar */
+  box-shadow: var(--app-shadow);
 }
 
 .habit-table-scroller {
@@ -241,7 +240,7 @@
 .status-choice-options button {
   border: 1px solid var(--border);
   border-radius: 0.45rem;
-  background: #fff;
+  background: var(--surface);
   width: 32px;
   height: 28px;
   font-weight: 600;
@@ -274,7 +273,7 @@
 .habit-row-actions button {
   border: 1px solid var(--border);
   border-radius: 0.6rem;
-  background: #fff;
+  background: var(--surface);
   padding: 0.35rem 0.75rem;
   width: 120px;
   text-align: center;
@@ -282,7 +281,7 @@
 
 .streak-card,
 .history-card {
-  background: #fff;
+  background: var(--surface);
   border-radius: var(--radius);
   border: 1px solid var(--border);
   padding: 1rem 1.25rem;
@@ -338,7 +337,7 @@
 .habit-modal {
   width: 100%;
   max-width: 420px;
-  background: #fff;
+  background: var(--surface);
   border-radius: var(--radius);
   border: 1px solid var(--border);
   padding: 1.5rem;
@@ -358,7 +357,7 @@
   border-radius: 0.75rem;
   padding: 0.4rem;
   font-size: 1.3rem;
-  background: #fff;
+  background: var(--surface);
 }
 
 .icon-option.active {
@@ -370,14 +369,14 @@
   padding: 2rem;
   border: 1px dashed var(--border);
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
   text-align: center;
 }
 
 .sticky-col {
   position: sticky;
   left: 0;
-  background: #fff;
+  background: var(--surface);
   z-index: 2;
 }
 

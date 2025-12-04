@@ -5,14 +5,15 @@
 
 .profileTrigger {
   width: 100%;
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  padding: 0.65rem 0.9rem;
-  background: #fff;
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  border-radius: 1.05rem;
+  padding: 0.7rem 0.95rem;
+  background: var(--surface);
   display: flex;
   align-items: center;
   gap: 0.65rem;
   text-align: left;
+  box-shadow: var(--app-shadow);
 }
 
 .avatar {
@@ -20,7 +21,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: #0ea5e9;
   color: #fff;
   font-weight: 700;
   display: inline-flex;
@@ -51,7 +52,7 @@
 
 .caret {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: #9aa5b5;
 }
 
 .dropdown {
@@ -59,10 +60,10 @@
   bottom: calc(100% + 0.6rem);
   left: 0;
   right: 0;
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: #fff;
-  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.15);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  border-radius: 1.1rem;
+  background: var(--surface);
+  box-shadow: var(--app-shadow);
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -86,7 +87,7 @@
   border-radius: 999px;
   padding: 0.2rem 0.7rem;
   font-size: 0.75rem;
-  background: rgba(148, 163, 184, 0.2);
+  background: rgba(14, 165, 233, 0.12);
   color: var(--text-muted);
 }
 
@@ -97,11 +98,17 @@
 }
 
 .dropdownActions button {
-  border: 1px solid var(--border);
-  border-radius: 0.8rem;
-  padding: 0.55rem 0.75rem;
+  border: 1px solid rgba(217, 226, 236, 0.9);
+  border-radius: 0.9rem;
+  padding: 0.6rem 0.8rem;
   text-align: left;
-  background: #fff;
+  background: var(--surface);
+  transition: border-color 0.15s ease, transform 0.12s ease;
+}
+
+.dropdownActions button:hover {
+  border-color: rgba(14, 165, 233, 0.35);
+  transform: translateX(3px);
 }
 
 .logoutButton {
@@ -115,26 +122,27 @@
 
 .guestBox {
   margin-top: auto;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(14, 165, 233, 0.18);
   border-radius: var(--radius);
-  padding: 1.25rem;
+  padding: 1.35rem;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  background: #fff;
+  background: var(--surface);
+  box-shadow: var(--app-shadow);
 }
 
 .guestBox button {
-  border-radius: 0.85rem;
-  padding: 0.55rem;
-  border: none;
-  background: var(--accent);
+  border-radius: 0.9rem;
+  padding: 0.6rem;
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  background: #0ea5e9;
   color: #fff;
   font-weight: 600;
 }
 
 .secondaryButton {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text-muted);
 }

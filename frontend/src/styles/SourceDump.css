@@ -77,12 +77,12 @@
 }
 
 .sd-card {
-  border: 1px solid var(--border);
+  border: 1px solid var(--app-border);
   border-radius: var(--radius);
   padding: 0.85rem;
-  box-shadow: var(--shadow-soft);
-  background: #fff;
+  background: var(--surface);
   cursor: pointer;
+  box-shadow: var(--app-shadow);
 }
 
 .sd-card-header h3 {
@@ -128,7 +128,7 @@
   height: 72px;
   object-fit: cover;
   border-radius: 0.5rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--app-border);
 }
 
 .sd-card-actions {
@@ -152,23 +152,23 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 1px solid var(--border);
-  background: #fff;
+  border: 1px solid var(--app-border);
+  background: var(--surface);
 }
 
 .sd-color-menu {
   position: absolute;
   right: 0;
   top: 110%;
-  background: #fff;
-  border: 1px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--app-border);
   border-radius: 0.75rem;
-  box-shadow: var(--shadow-soft);
   padding: 0.5rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.35rem;
   z-index: 20;
+  box-shadow: var(--app-shadow);
 }
 
 .sd-color-menu button {
@@ -179,8 +179,8 @@
 }
 
 .sd-color-default {
-  background: #fff;
-  border: 1px solid var(--border) !important;
+  background: var(--surface);
+  border: 1px solid var(--app-border) !important;
 }
 
 .sd-locked {
@@ -206,16 +206,17 @@
 }
 
 .sd-modal-content {
-  background: #fff;
+  background: var(--surface);
   border-radius: var(--radius);
   padding: 1rem;
   width: min(720px, 90vw);
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-soft);
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow);
 }
 
 .sd-modal-header {
@@ -294,7 +295,7 @@
 .sd-empty {
   color: var(--text-muted);
   padding: 1rem;
-  border: 1px dashed var(--border);
+  border: 1px dashed var(--app-border);
   border-radius: var(--radius);
   text-align: center;
 }

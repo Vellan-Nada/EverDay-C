@@ -2,26 +2,28 @@
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
-  padding: 0.75rem 1rem 1.75rem;
-  max-width: 1200px;
+  padding: 0.75rem 1.1rem 1.75rem;
+  max-width: 1240px;
   margin: 0 auto;
 }
 
 .hero {
-  background: #4f46e5;
+  background: #0ea5e9;
   color: #fff;
-  border-radius: 26px;
-  padding: 1.8rem 2rem;
-  box-shadow: 0 0px 20px 1px rgba(15, 23, 42, 0.18);
+  border-radius: 32px;
+  padding: 2rem 2.4rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.65rem;
+  position: relative;
+  overflow: hidden;
 }
 
 .hero h1 {
   margin: 0;
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .hero p {
@@ -34,29 +36,30 @@
 
 .heroBadge {
   align-self: flex-start;
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.16);
   color: #fff;
   border-radius: 999px;
-  padding: 0.4rem 0.9rem;
+  padding: 0.45rem 0.95rem;
   font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.02em;
 }
 
 .cardGrid {
   display: grid;
   gap: 1.1rem;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  padding: 0.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  padding: 0.35rem;
 }
 
 .toolCard {
-  min-height: 160px;
+  min-height: 170px;
   height: 100%;
-  border-radius: 18px;
-  background: #eef2ff;
-  border: 1px solid rgba(59, 130, 246, 0.15);
-  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
-  padding: 1.25rem 1.3rem;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow);
+  padding: 1.35rem 1.35rem;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -64,13 +67,12 @@
   gap: 0.55rem;
   isolation: isolate;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .toolCard:hover,
 .toolCard:focus-visible {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+  transform: translateY(-4px) scale(1.01);
+  border-color: rgba(14, 165, 233, 0.32);
 }
 
 .toolAccent {
@@ -79,7 +81,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(37, 99, 235, 0.08));
+  background: transparent;
   z-index: 0;
 }
 
@@ -105,7 +107,6 @@
   background: #0f172a;
   color: #fff;
   font-size: 1rem;
-  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
   z-index: 1;
 }
 
@@ -151,19 +152,38 @@
 
 @media (max-width: 768px) {
   .hero {
-    border-radius: 18px;
-    padding: 1.4rem 1.5rem;
+    border-radius: 22px;
+    padding: 1.5rem 1.5rem;
   }
 
   .hero h1 {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
   }
 
   .cardGrid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   }
 
   .toolCard {
     min-height: 180px;
+  }
+}
+
+@media (max-width: 540px) {
+  .hero {
+    padding: 1.25rem 1.2rem;
+  }
+
+  .hero p {
+    font-size: 0.95rem;
+  }
+
+  .cardGrid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.85rem;
+  }
+
+  .toolCard {
+    padding: 1.1rem 1.1rem;
   }
 }
