@@ -56,7 +56,7 @@
   min-height: 170px;
   height: 100%;
   border-radius: 20px;
-  background: whitesmoke;
+  background: white;
   border: 1px solid var(--app-border);
   box-shadow: var(--app-shadow);
   padding: 1.35rem 1.35rem;

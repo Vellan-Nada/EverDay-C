@@ -9,9 +9,9 @@
   --accent: #3c3a36;
   --accent-strong: #2f2b27;
   --accent-muted: rgba(44, 42, 38, 0.12);
-  --card-bg: whitesmoke;
-  --card-muted: whitesmoke;
-  --surface: whitesmoke;
+  --card-bg: white;
+  --card-muted: white;
+  --surface: white;
   --app-border: #dfdcd4;
   --app-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
   --glass: rgba(255, 255, 255, 0.72);
