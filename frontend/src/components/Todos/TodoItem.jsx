@@ -79,6 +79,25 @@ const TodoItem = ({
         {error && <p className="todo-inline-error">{error}</p>}
       </div>
       <div className="todo-actions">
+        <div className="todo-color-control">
+          <button
+            type="button"
+            className={`color-dot ${isPremium ? '' : 'locked'}`}
+            style={{ background: todo.background_color || '#e2e8f0' }}
+            onClick={() => setShowColors((prev) => !prev)}
+          >
+            {!isPremium && '🔒'}
+          </button>
+          {showColors && (
+            <ColorPickerPopover
+              isPremium={isPremium}
+              onSelect={handleColorSelect}
+              onClose={() => setShowColors(false)}
+              disabledReason="Card colors are a premium feature."
+              saving={colorSaving}
+            />
+          )}
+        </div>
         {editing ? (
           <>
             <button type="button" className="todo-btn ghost" onClick={() => { setEditing(false); setDraft(todo.title); setError(null); }}>
@@ -97,25 +116,6 @@ const TodoItem = ({
               Delete
             </button>
           </>
-        )}
-      </div>
-      <div className="todo-color-control">
-        <button
-          type="button"
-          className={`color-dot ${isPremium ? '' : 'locked'}`}
-          style={{ background: todo.background_color || '#e2e8f0' }}
-          onClick={() => setShowColors((prev) => !prev)}
-        >
-          {!isPremium && '🔒'}
-        </button>
-        {showColors && (
-          <ColorPickerPopover
-            isPremium={isPremium}
-            onSelect={handleColorSelect}
-            onClose={() => setShowColors(false)}
-            disabledReason="Background colors are premium."
-            saving={colorSaving}
-          />
         )}
       </div>
     </div>

@@ -104,10 +104,12 @@ const NoteCard = ({
           <button
             type="button"
             aria-label="Change card color"
-            className="color-dot"
+            className={`color-dot ${isPremium ? '' : 'locked'}`}
             style={{ background: note.color || '#e2e8f0' }}
             onClick={handlePaletteToggle}
-          />
+          >
+            {!isPremium && '🔒'}
+          </button>
           {showPalette && (
             <div className="color-popover">
               {PALETTE.map((color) => (
@@ -123,8 +125,16 @@ const NoteCard = ({
           )}
           {showUpsell && (
             <div className="color-popover">
-              <p>Card colors are a premium perk.</p>
+              <p>Card colors are a premium feature.</p>
               <UpgradeToPremium cta="Upgrade" variant="compact" />
+              <button
+                type="button"
+                className="notes-btn secondary"
+                style={{ width: '100%' }}
+                onClick={() => setShowUpsell(false)}
+              >
+                Close
+              </button>
             </div>
           )}
         </div>
