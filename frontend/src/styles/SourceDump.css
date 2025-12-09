@@ -76,23 +76,37 @@
 .sd-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
 .sd-card {
   border: 1px solid var(--app-border);
   border-radius: var(--radius);
-  padding: 0.85rem;
+  padding: 0.85rem 1.5rem;
   background: var(--surface);
   cursor: pointer;
   box-shadow: var(--app-shadow);
+  position: relative;
 }
 
 .sd-card-header h3 {
-  margin: 0 0 0.35rem;
+  margin: 0 0 1.5rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Card content spacing */
+.sd-card .sd-card-header {
+  margin-bottom: 0.75rem;
+}
+
+.sd-card .sd-section {
+  margin-top: 0.5rem;
+}
+
+.sd-card .sd-section:first-of-type {
+  margin-top: 0;
 }
 
 .sd-section {
@@ -127,6 +141,10 @@
   flex-wrap: wrap;
 }
 
+.sd-card .sd-shots {
+  margin-top: 0.6rem;
+}
+
 .sd-shots img {
   width: 72px;
   height: 72px;
@@ -139,8 +157,10 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  margin-top: 0.6rem;
   gap: 0.5rem;
+  position: absolute;
+  right: 0.85rem;
+  bottom: 0.85rem;
 }
 
 .sd-buttons {
@@ -182,6 +202,64 @@
   border: 1px solid rgba(15, 23, 42, 0.1);
 }
 
+/* Updated color control to match Notes/ToDo behavior */
+.sd-color-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: var(--surface);
+}
+
+.sd-color-dot.locked {
+  cursor: not-allowed;
+  background: #e2e8f0;
+}
+
+.sd-color-popover {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  z-index: 20;
+  background: var(--surface);
+  border-radius: 0.8rem;
+  border: 1px solid var(--app-border);
+  padding: 0.65rem;
+  width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  box-shadow: var(--app-shadow);
+}
+
+.sd-color-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.35rem;
+}
+
+.sd-color-grid button {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+.sd-color-popover p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.sd-color-popover .sd-btn {
+  border-radius: 999px;
+}
+
 .sd-color-default {
   background: var(--surface);
   border: 1px solid var(--app-border) !important;
@@ -212,7 +290,7 @@
 .sd-modal-content {
   background: var(--surface);
   border-radius: var(--radius);
-  padding: 1rem;
+  padding: 1.5rem;
   width: min(720px, 90vw);
   max-height: 90vh;
   overflow-y: auto;
@@ -251,7 +329,26 @@
 .sd-section {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0rem;
+}
+
+/* Add breathing room between sections inside each card without
+   affecting the form layout in the modal. */
+.sd-card .sd-section + .sd-section {
+  margin-top: 1.5rem;
+}
+
+/* Inline labels with icons for sections */
+.sd-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.sd-label-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
 }
 
 .sd-upload input[type='file'] {

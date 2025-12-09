@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient.js';
+import UpgradeToPremium from '../Notes/UpgradeToPremium.jsx';
+import { SourceIcon, NoteIcon, FilmIcon } from '../FeatureIcons.jsx';
 
 const COLOR_PRESETS = ['#f8fafc', '#e0f2fe', '#fef9c3', '#dcfce7', '#ffe4e6'];
 
 const SourceCard = ({ card, isPremium, onChangeColor, onClick }) => {
   const [colorMenu, setColorMenu] = useState(false);
-  const [lockedMsg, setLockedMsg] = useState(false);
+  const [showUpsell, setShowUpsell] = useState(false);
   const [signedShots, setSignedShots] = useState([]);
 
   const links = (card.links || '')
@@ -40,13 +42,19 @@ const SourceCard = ({ card, isPremium, onChangeColor, onClick }) => {
     resolveShots();
   }, [card.screenshots, isPremium]);
 
-  const handleColorClick = () => {
+  const handleColorToggle = () => {
     if (!isPremium) {
-      setLockedMsg(true);
-      setTimeout(() => setLockedMsg(false), 1500);
+      setShowUpsell((prev) => !prev);
+      setColorMenu(false);
       return;
     }
-    setColorMenu((p) => !p);
+    setShowUpsell(false);
+    setColorMenu((prev) => !prev);
+  };
+
+  const handleColorPick = (color) => {
+    onChangeColor(card, color);
+    setColorMenu(false);
   };
 
   return (
@@ -63,7 +71,10 @@ const SourceCard = ({ card, isPremium, onChangeColor, onClick }) => {
       <div className="sd-card-body">
         {links.length > 0 && (
           <div className="sd-section">
-            <strong>Links</strong>
+            <strong className="sd-label">
+              <SourceIcon className="sd-label-icon" size={18} />
+              Links
+            </strong>
             <div className="sd-links">
               {links.slice(0, 2).map((l) => (
                 <a key={l} href={l} target="_blank" rel="noreferrer">
@@ -76,13 +87,19 @@ const SourceCard = ({ card, isPremium, onChangeColor, onClick }) => {
         )}
         {card.text_content && (
           <div className="sd-section">
-            <strong>Text</strong>
+            <strong className="sd-label">
+              <NoteIcon className="sd-label-icon" size={18} />
+              Text
+            </strong>
             <p className="sd-text">{card.text_content}</p>
           </div>
         )}
         {isPremium && signedShots.length > 0 && (
           <div className="sd-section">
-            <strong>Screenshots</strong>
+            <strong className="sd-label">
+              <FilmIcon className="sd-label-icon" size={18} />
+              Screenshots
+            </strong>
             <div className="sd-shots">
               {signedShots.map((url) => (
                 <a key={url} href={url} target="_blank" rel="noreferrer">
@@ -97,41 +114,48 @@ const SourceCard = ({ card, isPremium, onChangeColor, onClick }) => {
         <div className="sd-color-wrap">
           <button
             type="button"
-            className="sd-color"
+            className={`sd-color-dot ${!isPremium ? 'locked' : ''}`}
             onClick={(e) => {
               e.stopPropagation();
-              handleColorClick();
+              handleColorToggle();
             }}
             aria-label="Change background color"
+            style={{ background: card.background_color || '#e2e8f0' }}
           >
-            ●
+            {!isPremium && '🔒'}
           </button>
           {colorMenu && isPremium && (
-            <div className="sd-color-menu" onClick={(e) => e.stopPropagation()}>
-              {COLOR_PRESETS.map((c) => (
+            <div className="sd-color-popover" onClick={(e) => e.stopPropagation()}>
+              <div className="sd-color-grid">
+                {COLOR_PRESETS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    style={{ background: c }}
+                    onClick={() => handleColorPick(c)}
+                  />
+                ))}
                 <button
-                  key={c}
                   type="button"
-                  style={{ background: c }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onChangeColor(card, c);
-                    setColorMenu(false);
-                  }}
+                  className="sd-color-default"
+                  onClick={() => handleColorPick(null)}
+                  aria-label="Reset color"
                 />
-              ))}
-              <button
-                type="button"
-                className="sd-color-default"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onChangeColor(card, null);
-                  setColorMenu(false);
-                }}
-              />
+              </div>
+              <button type="button" className="sd-btn ghost" onClick={() => setColorMenu(false)}>
+                Cancel
+              </button>
             </div>
           )}
-          {lockedMsg && <div className="sd-locked">Premium feature</div>}
+          {showUpsell && (
+            <div className="sd-color-popover" onClick={(e) => e.stopPropagation()}>
+              <p className="sd-locked">Card colors are a premium feature.</p>
+              <UpgradeToPremium cta="Upgrade" variant="compact" />
+              <button type="button" className="sd-btn ghost" onClick={() => setShowUpsell(false)}>
+                Close
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </article>

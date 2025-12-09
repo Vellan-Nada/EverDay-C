@@ -268,8 +268,15 @@ const PomodoroPage = () => {
   }, [isRunning, endTime]);
 
   // Handle timer reaching zero and auto-cycle
+  const isCompletingRef = useRef(false);
+
   const handleCompletion = async () => {
+    if (isCompletingRef.current) return;
+    isCompletingRef.current = true;
     setIsRunning(false);
+    setEndTime(null);
+    setSecondsLeft(0);
+
     const now = new Date().toISOString();
     const duration = modeToSeconds(mode, settings);
     if (sessionStart && !guestMode) {
@@ -283,39 +290,86 @@ const PomodoroPage = () => {
       });
     }
 
-    if (mode === 'pomodoro') {
-      // auto start short break
-      setMode('short_break');
-      setSecondsLeft(modeToSeconds('short_break', settings));
-      setIsRunning(true);
-      setSessionStart(new Date().toISOString());
-      setEndTime(Date.now() + modeToSeconds('short_break', settings) * 1000);
-    } else if (mode === 'short_break') {
-      const nextCount = sessionsSinceLong + 1;
-      setSessionsSinceLong(nextCount);
-      if (nextCount < settings.long_break_after_sessions) {
-        // back to pomodoro, idle
+    // play alert for up to 5 seconds before moving to the next mode
+    const playAlert = () => {
+      if (!settings.play_sound || typeof Audio === 'undefined') return Promise.resolve();
+      try {
+        const audio = new Audio('/sounds/alert.mp3');
+        audio.currentTime = 0;
+        const playPromise = audio.play() || Promise.resolve();
+        return playPromise
+          .then(() => {
+            return new Promise((resolve) => {
+              setTimeout(() => {
+                audio.pause();
+                audio.currentTime = 0;
+                resolve();
+              }, 5000);
+            });
+          })
+          .catch(() => Promise.resolve());
+      } catch {
+        return Promise.resolve();
+      }
+    };
+
+    await playAlert();
+
+    // Reset the completed mode back to its configured duration so returning to it isn't stuck at 0
+    const resetDuration = modeToSeconds(mode, settings);
+    persistSlot(mode, {
+      secondsLeft: resetDuration,
+      isRunning: false,
+      sessionStart: null,
+      endTime: null,
+    });
+
+    const transition = () => {
+      if (mode === 'pomodoro') {
+        // auto start short break
+        const nextDuration = modeToSeconds('short_break', settings);
+        setMode('short_break');
+        setSecondsLeft(nextDuration);
+        setIsRunning(true);
+        const startIso = new Date().toISOString();
+        setSessionStart(startIso);
+        setEndTime(Date.now() + nextDuration * 1000);
+      } else if (mode === 'short_break') {
+        const nextCount = sessionsSinceLong + 1;
+        setSessionsSinceLong(nextCount);
+        const nextDuration = modeToSeconds(
+          nextCount < settings.long_break_after_sessions ? 'pomodoro' : 'long_break',
+          settings
+        );
+        if (nextCount < settings.long_break_after_sessions) {
+          // back to pomodoro, idle
+          setMode('pomodoro');
+          setSecondsLeft(nextDuration);
+          setIsRunning(false);
+          setSessionStart(null);
+          setEndTime(null);
+        } else {
+          // go to long break, auto start
+          setMode('long_break');
+          setSecondsLeft(nextDuration);
+          setIsRunning(true);
+          const startIso = new Date().toISOString();
+          setSessionStart(startIso);
+          setEndTime(Date.now() + nextDuration * 1000);
+        }
+      } else if (mode === 'long_break') {
+        const nextDuration = modeToSeconds('pomodoro', settings);
+        setSessionsSinceLong(0);
         setMode('pomodoro');
-        setSecondsLeft(modeToSeconds('pomodoro', settings));
+        setSecondsLeft(nextDuration);
         setIsRunning(false);
         setSessionStart(null);
         setEndTime(null);
-      } else {
-        // go to long break, auto start
-        setMode('long_break');
-        setSecondsLeft(modeToSeconds('long_break', settings));
-        setIsRunning(true);
-        setSessionStart(new Date().toISOString());
-        setEndTime(Date.now() + modeToSeconds('long_break', settings) * 1000);
       }
-    } else if (mode === 'long_break') {
-      setSessionsSinceLong(0);
-      setMode('pomodoro');
-      setSecondsLeft(modeToSeconds('pomodoro', settings));
-      setIsRunning(false);
-      setSessionStart(null);
-      setEndTime(null);
-    }
+    };
+
+    transition();
+    isCompletingRef.current = false;
   };
 
   const handleToggle = () => {
@@ -482,7 +536,6 @@ const PomodoroPage = () => {
         onToggle={handleToggle}
         onRestart={handleRestart}
         onSelectMode={handleModeSelect}
-        playSound={settings.play_sound}
       />
       <PomodoroSettings
         open={settingsOpen}

@@ -26,6 +26,26 @@
   align-items: center;
 }
 
+.journal-controls select {
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  padding: 0.45rem 0.9rem;
+  background: var(--surface);
+  color: #232222;
+  font-weight: 500;
+  min-width: 80px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.journal-controls select:hover,
+.journal-controls select:focus {
+  border-color: rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.08);
+  outline: none;
+  transform: translateY(-1px);
+}
+
 .journal-btn {
   border: none;
   border-radius: 0.8rem;
@@ -58,10 +78,12 @@
 .journal-day {
   border: 1px solid var(--app-border);
   border-radius: 0.9rem;
-  padding: 0.75rem;
+  padding: 1rem;
   text-align: center;
   background: var(--surface);
   box-shadow: var(--app-shadow);
+  min-height: 105%;
+  height: 105%;
 }
 
 .journal-day.has-entry {
@@ -117,7 +139,7 @@
 .journal-modal-content {
   background: var(--surface);
   border-radius: var(--radius);
-  padding: 1rem;
+  padding: 1.5rem;
   width: min(700px, 90vw);
   display: flex;
   flex-direction: column;
