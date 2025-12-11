@@ -276,17 +276,18 @@
 
 .notes-upgrade-btn {
   border: none;
-  border-radius: 999px;
+  border-radius: 0.75rem;
   background: var(--accent);
   color: #fff;
   font-weight: 600;
-  padding: 0.45rem 0.9rem;
-  width: 100%;
-  flex: 1 0 100%;
-  display: block;
+  padding: 1rem 0.9rem;
+  width: auto;
+  flex: 0 0 auto;
+  display: inline-flex;
   text-align: center;
   box-shadow: none;
-  align-self: stretch;
+  align-self: center;
+  white-space: nowrap; 
 }
 
 .notes-upgrade-btn--full {

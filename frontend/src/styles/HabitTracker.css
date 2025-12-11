@@ -55,20 +55,16 @@
 }
 
 .habit-alert {
+  border-radius: 0.9rem;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  background: rgba(248, 113, 113, 0.1);
+  padding: 0.2rem 0.8rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.8rem 1rem;
-  border-radius: 12px;
-  background: #fff5f5;
-  border: 1px solid #f5d0d0;
+  gap: 0.5rem;
   color: #b91c1c;
-  font-size: 0.95rem;
-}
-.habit-alert p {
-  margin: 0;
-  flex: 1;
+  font-size: 0.9rem;
 }
 
 .habit-subheader-right {
@@ -504,7 +500,6 @@
 .habit-modal-limit {
   color: var(--danger);
   font-size: 0.9rem;
-  height: 2000px;
 }
 
 .icon-picker__grid {

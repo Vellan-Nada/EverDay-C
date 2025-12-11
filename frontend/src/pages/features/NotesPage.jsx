@@ -247,7 +247,7 @@ const NotesPage = () => {
       {limitReached && showLimitAlert && (
         <div className="notes-upgrade-callout">
           <span>Free plan limit reached (15 items). Upgrade to add more.</span>
-          <UpgradeToPremium variant="full" cta="Upgrade to Premium" />
+          <UpgradeToPremium variant="compact" cta="Upgrade to Premium" />
         </div>
       )}
 

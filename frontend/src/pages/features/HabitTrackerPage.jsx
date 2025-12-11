@@ -295,7 +295,7 @@ const HabitTrackerPage = () => {
 
       {limitReached && showLimitAlert && !isPremium && (
         <div className="habit-alert">
-          <p>Free plan limit reached (7 items). Upgrade to add more.</p>
+          <p>Free plan limit reached (7 habits). Upgrade to add more.</p>
           <UpgradeToPremium variant="compact" />
         </div>
       )}
