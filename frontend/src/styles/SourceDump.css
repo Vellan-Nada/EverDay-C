@@ -53,9 +53,10 @@
 .sd-btn {
   border: none;
   border-radius: 0.8rem;
-  padding: 0.45rem 0.9rem;
+  padding: 0.7rem 1.2rem;
   font-weight: 600;
   cursor: pointer;
+  font-size: 0.9rem;
 }
 
 .sd-btn.primary {
@@ -258,6 +259,11 @@
 
 .sd-color-popover .sd-btn {
   border-radius: 999px;
+  width: 100%;
+  padding: 0.4rem 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .sd-color-default {
