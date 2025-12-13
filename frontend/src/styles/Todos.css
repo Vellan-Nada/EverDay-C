@@ -183,7 +183,7 @@
   height: 32px;
   border-radius: 50%;
   border: 1px solid rgba(15, 23, 42, 0.15);
-  font-size: 0.75rem;
+  font-size: 1rem;
 }
 
 .color-dot.locked {
@@ -196,20 +196,23 @@
   right: 0;
   z-index: 15;
   background: var(--surface);
-  border-radius: 0.75rem;
+  border-radius: 0.8rem;
   border: 1px solid var(--app-border);
-  padding: 0.65rem;
-  width: 180px;
+  padding: 0.75rem;
+  min-width: 280px;
+  max-width: 320px;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   box-shadow: var(--app-shadow);
+  align-items: stretch;
 }
 
-.todo-color-popover p {
+.todo-color-popover p:not(.premium-upsell-message) {
   margin: 0;
   font-size: 0.85rem;
   color: var(--text-muted);
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 .todo-color-grid {
@@ -219,16 +222,45 @@
 }
 
 .todo-color-grid button {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  border: 1px solid rgba(15, 23, 42, 0.15);
 }
 
 /* Popover buttons */
 .todo-color-popover .notes-upgrade-btn,
 .todo-color-popover .todo-btn {
   border-radius: 999px;
+}
+
+.todo-color-popover .color-picker-upgrade-btn {
+  width: 100%;
+  border-radius: 999px;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: var(--app-shadow);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.todo-color-popover .todo-btn.ghost {
+  width: 100%;
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  background: var(--card-muted);
+  border: 1px solid var(--app-border);
+  color: #0f172a;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .todo-empty,

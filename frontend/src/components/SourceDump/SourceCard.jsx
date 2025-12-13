@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient.js';
-import UpgradeToPremium from '../Notes/UpgradeToPremium.jsx';
+import PremiumColorUpsell from '../PremiumColorUpsell.jsx';
 import { SourceIcon, NoteIcon, FilmIcon } from '../FeatureIcons.jsx';
 
 const COLOR_PRESETS = ['#f8fafc', '#e0f2fe', '#fef9c3', '#dcfce7', '#ffe4e6'];
@@ -149,11 +149,7 @@ const SourceCard = ({ card, isPremium, onChangeColor, onClick }) => {
           )}
           {showUpsell && (
             <div className="sd-color-popover" onClick={(e) => e.stopPropagation()}>
-              <p className="sd-locked">Card colors are a premium feature.</p>
-              <UpgradeToPremium cta="Upgrade" variant="compact" />
-              <button type="button" className="sd-btn ghost" onClick={() => setShowUpsell(false)}>
-                Close
-              </button>
+              <PremiumColorUpsell onClose={() => setShowUpsell(false)} />
             </div>
           )}
         </div>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { createCheckoutSession } from '../../api/billingApi.js';
 import { useAuth } from '../../hooks/useAuth.js';
 
-const UpgradeToPremium = ({ cta = 'Upgrade to Premium', variant = 'full' }) => {
+const UpgradeToPremium = ({ cta = 'Upgrade to Premium', variant = 'full', className = '' }) => {
   const navigate = useNavigate();
   const { token } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -29,7 +29,7 @@ const UpgradeToPremium = ({ cta = 'Upgrade to Premium', variant = 'full' }) => {
       type="button"
       onClick={startUpgrade}
       disabled={loading}
-      className={`notes-upgrade-btn notes-upgrade-btn--${variant}`}
+      className={['notes-upgrade-btn', `notes-upgrade-btn--${variant}`, className].filter(Boolean).join(' ')}
     >
       {loading ? 'Redirecting…' : cta}
     </button>

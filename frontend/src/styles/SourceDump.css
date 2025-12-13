@@ -197,10 +197,10 @@
 }
 
 .sd-color-menu button {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  border: 1px solid rgba(15, 23, 42, 0.15);
 }
 
 /* Updated color control to match Notes/ToDo behavior */
@@ -209,7 +209,7 @@
   height: 32px;
   border-radius: 50%;
   border: 1px solid rgba(15, 23, 42, 0.15);
-  font-size: 0.85rem;
+  font-size: 1rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -230,12 +230,14 @@
   background: var(--surface);
   border-radius: 0.8rem;
   border: 1px solid var(--app-border);
-  padding: 0.65rem;
-  width: 190px;
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   box-shadow: var(--app-shadow);
+  min-width: 280px;
+  max-width: 320px;
+  align-items: stretch;
 }
 
 .sd-color-grid {
@@ -245,25 +247,46 @@
 }
 
 .sd-color-grid button {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  border: 1px solid rgba(15, 23, 42, 0.15);
 }
 
-.sd-color-popover p {
+.sd-color-popover p:not(.premium-upsell-message) {
   margin: 0;
   font-size: 0.9rem;
   color: var(--text-muted);
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 .sd-color-popover .sd-btn {
   border-radius: 999px;
   width: 100%;
-  padding: 0.4rem 1.1rem;
+  padding: 0.55rem 1rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  background: var(--card-muted);
+  border: 1px solid var(--app-border);
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.sd-color-popover .sd-color-upgrade-btn {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.6rem 1rem;
+  box-shadow: var(--app-shadow);
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+  width: 100%;
 }
 
 .sd-color-default {

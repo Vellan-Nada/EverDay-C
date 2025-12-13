@@ -97,38 +97,6 @@ const FilmIcon = ({ className }) => (
   </IconBase>
 );
 
-const Logo = ({ size = 40, variant = 1, className = '' }) => {
-  const commonProps = {
-    width: size,
-    height: size,
-    viewBox: '0 0 40 40',
-    fill: 'none',
-    xmlns: 'http://www.w3.org/2000/svg',
-    className,
-  };
-
-  const bg = <rect width="40" height="40" rx="12" fill="null" />;
-
-  if (variant === 1) {
-    return (
-      <svg {...commonProps}>
-        {bg}
-        <path
-          d="M12 28L18.5 19.5L23.5 24.5L29 13"
-          stroke="black"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <circle cx="29" cy="13" r="2.5" fill="black" />
-        <path d="M12 28L12 28.01" stroke="black" strokeWidth="3" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  return null;
-};
-
 const defaultNavItems = [
   { label: 'Dashboard', path: '/' },
   { label: 'Habit Tracker', path: '/habits' },
@@ -264,7 +232,7 @@ const Sidebar = ({
       <div className={styles.sidebarHeader}>
         <div className={styles.brandRow}>
           <NavLink to="/" className={styles.brandLink} onClick={onClose} aria-label="Go to dashboard">
-            <Logo className={styles.logoIcon} />
+            <img src="/logo2.png" alt="EverDay logo" className={styles.logoIcon} />
           </NavLink>
           <div className={styles.brand}>
             <h1>EverDay</h1>

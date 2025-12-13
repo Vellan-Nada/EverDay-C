@@ -1,4 +1,4 @@
-import UpgradeToPremium from '../Notes/UpgradeToPremium.jsx';
+import PremiumColorUpsell from '../PremiumColorUpsell.jsx';
 
 const PALETTE = ['#fef3c7', '#e0f2fe', '#f1f5f9', '#e9d5ff', '#fef9c3', '#cffafe', '#dcfce7'];
 
@@ -6,11 +6,10 @@ const ColorPickerPopover = ({ isPremium, onSelect, onClose, disabledReason, savi
   if (!isPremium) {
     return (
       <div className="todo-color-popover">
-        <p>{disabledReason || 'Color coding is a premium perk.'}</p>
-        <UpgradeToPremium cta="Upgrade" variant="compact" />
-        <button type="button" className="todo-btn ghost" onClick={onClose}>
-          Close
-        </button>
+        <PremiumColorUpsell
+          message={disabledReason || 'Color coding is a premium perk.'}
+          onClose={onClose}
+        />
       </div>
     );
   }

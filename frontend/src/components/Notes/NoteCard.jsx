@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import UpgradeToPremium from './UpgradeToPremium.jsx';
+import PremiumColorUpsell from '../PremiumColorUpsell.jsx';
 
 const PALETTE = ['#FFFFFF', '#FDF4FF', '#FEF3C7', '#E0F2FE', '#D1FAE5', '#FFE4E6', '#DCFCE7', '#F1F5F9'];
 
@@ -116,6 +116,7 @@ const NoteCard = ({
                 <button
                   key={color}
                   type="button"
+                  className="color-swatch"
                   style={{ background: color }}
                   onClick={() => handleColorPick(color)}
                   disabled={colorSaving}
@@ -125,16 +126,7 @@ const NoteCard = ({
           )}
           {showUpsell && (
             <div className="color-popover">
-              <p>Card colors are a premium feature.</p>
-              <UpgradeToPremium cta="Upgrade" variant="compact" />
-              <button
-                type="button"
-                className="notes-btn secondary"
-                style={{ width: '100%' }}
-                onClick={() => setShowUpsell(false)}
-              >
-                Close
-              </button>
+              <PremiumColorUpsell onClose={() => setShowUpsell(false)} />
             </div>
           )}
         </div>

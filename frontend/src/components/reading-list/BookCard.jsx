@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PremiumColorUpsell from '../PremiumColorUpsell.jsx';
 
 const STATUS_OPTIONS = [
   { id: 'want_to_read', label: 'Move to: Books want to read' },
@@ -11,14 +12,14 @@ const COLOR_PRESETS = ['#fff7ed', '#eef2ff', '#ecfeff', '#f1f5f9', '#fef9c3', '#
 const BookCard = ({ item, isPremium, onEdit, onDelete, onMove, onChangeColor }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [colorOpen, setColorOpen] = useState(false);
-  const [lockedMessage, setLockedMessage] = useState(false);
+  const [showUpsell, setShowUpsell] = useState(false);
 
   const bg = isPremium && item.background_color ? item.background_color : '#fff';
 
   const handleColorClick = () => {
     if (!isPremium) {
-      setLockedMessage(true);
-      setTimeout(() => setLockedMessage(false), 1800);
+      setShowUpsell((prev) => !prev);
+      setColorOpen(false);
       return;
     }
     setColorOpen((prev) => !prev);
@@ -33,41 +34,55 @@ const BookCard = ({ item, isPremium, onEdit, onDelete, onMove, onChangeColor }) 
       </div>
       <div className="reading-card-actions">
         <div className="reading-card-buttons">
+          <button
+            type="button"
+            className={`reading-color ${isPremium ? '' : 'locked'}`}
+            aria-label="Change color"
+            onClick={handleColorClick}
+          >
+            {isPremium ? '●' : '🔒'}
+          </button>
           <button type="button" className="reading-btn ghost" onClick={() => onEdit(item)}>
             Edit
           </button>
           <button type="button" className="reading-btn danger" onClick={() => onDelete(item)}>
             Delete
           </button>
-          <button type="button" className="reading-color" aria-label="Change color" onClick={handleColorClick}>
-            ●
-          </button>
           {colorOpen && isPremium && (
-            <div className="reading-color-menu">
-              {COLOR_PRESETS.map((c) => (
+            <div className="reading-color-popover" onClick={(e) => e.stopPropagation()}>
+              <div className="reading-color-menu">
+                {COLOR_PRESETS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    style={{ background: c }}
+                    onClick={() => {
+                      onChangeColor?.(item, c);
+                      setColorOpen(false);
+                    }}
+                    aria-label={`Set color ${c}`}
+                  />
+                ))}
                 <button
-                  key={c}
                   type="button"
-                  style={{ background: c }}
+                  style={{ background: '#fff', border: '1px solid var(--border)' }}
                   onClick={() => {
-                  onChangeColor?.(item, c);
-                  setColorOpen(false);
-                }}
-                aria-label={`Set color ${c}`}
-              />
-            ))}
-              <button
-                type="button"
-                style={{ background: '#fff', border: '1px solid var(--border)' }}
-                onClick={() => {
-                  onChangeColor?.(item, null);
-                  setColorOpen(false);
-                }}
-                aria-label="Reset color"
-              />
+                    onChangeColor?.(item, null);
+                    setColorOpen(false);
+                  }}
+                  aria-label="Reset color"
+                />
+              </div>
+              <button type="button" className="reading-btn ghost full" onClick={() => setColorOpen(false)}>
+                Cancel
+              </button>
             </div>
           )}
-          {lockedMessage && <div className="reading-locked small">Premium feature</div>}
+          {showUpsell && (
+            <div className="reading-color-popover" onClick={(e) => e.stopPropagation()}>
+              <PremiumColorUpsell onClose={() => setShowUpsell(false)} />
+            </div>
+          )}
         </div>
         <div className="reading-move">
           <button type="button" className="reading-btn ghost" onClick={() => setMenuOpen((p) => !p)} aria-label="Move item">

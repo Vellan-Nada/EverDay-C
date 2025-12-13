@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PremiumColorUpsell from '../PremiumColorUpsell.jsx';
 
 const STATUS_OPTIONS = [
   { id: 'to_watch', label: "Move to 'To watch'" },
@@ -11,14 +12,14 @@ const COLOR_PRESETS = ['#fff7ed', '#eef2ff', '#ecfeff', '#f1f5f9', '#fef9c3', '#
 const MovieItemCard = ({ item, isPremium, onEdit, onDelete, onMove, onChangeColor }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [colorOpen, setColorOpen] = useState(false);
-  const [lockedMessage, setLockedMessage] = useState(false);
+  const [showUpsell, setShowUpsell] = useState(false);
 
   const bg = item.card_color ?? '#f8fafc';
 
   const handleColorClick = () => {
     if (!isPremium) {
-      setLockedMessage(true);
-      setTimeout(() => setLockedMessage(false), 2000);
+      setShowUpsell((prev) => !prev);
+      setColorOpen(false);
       return;
     }
     setColorOpen((prev) => !prev);
@@ -34,40 +35,59 @@ const MovieItemCard = ({ item, isPremium, onEdit, onDelete, onMove, onChangeColo
       </div>
       <div className="movie-card-actions">
         <div className="movie-card-buttons">
+          <div className="movie-color-wrap">
+            <button
+              type="button"
+              className={`movie-color ${isPremium ? '' : 'locked'}`}
+              aria-label="Change color"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleColorClick();
+              }}
+            >
+              {isPremium ? '●' : '🔒'}
+            </button>
+            {colorOpen && isPremium && (
+              <div className="movie-color-popover" onClick={(e) => e.stopPropagation()}>
+                <div className="movie-color-menu">
+                  {COLOR_PRESETS.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      style={{ background: c }}
+                      onClick={() => {
+                        onChangeColor(item, c);
+                        setColorOpen(false);
+                      }}
+                    />
+                  ))}
+                  <button
+                    type="button"
+                    style={{ background: '#fff', border: '1px solid var(--border)' }}
+                    onClick={() => {
+                      onChangeColor(item, null);
+                      setColorOpen(false);
+                    }}
+                    aria-label="Reset color"
+                  />
+                </div>
+                <button type="button" className="movie-btn ghost" onClick={() => setColorOpen(false)}>
+                  Cancel
+                </button>
+              </div>
+            )}
+            {showUpsell && (
+              <div className="movie-color-popover" onClick={(e) => e.stopPropagation()}>
+                <PremiumColorUpsell onClose={() => setShowUpsell(false)} />
+              </div>
+            )}
+          </div>
           <button type="button" className="movie-btn ghost" onClick={() => onEdit(item)}>
             Edit
           </button>
           <button type="button" className="movie-btn danger" onClick={() => onDelete(item)}>
             Delete
           </button>
-          <button type="button" className="movie-color" aria-label="Change color" onClick={handleColorClick}>
-            ●
-          </button>
-          {colorOpen && isPremium && (
-            <div className="movie-color-menu">
-              {COLOR_PRESETS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  style={{ background: c }}
-                  onClick={() => {
-                    onChangeColor(item, c);
-                    setColorOpen(false);
-                  }}
-                />
-              ))}
-              <button
-                type="button"
-                style={{ background: '#fff', border: '1px solid var(--border)' }}
-                onClick={() => {
-                  onChangeColor(item, null);
-                  setColorOpen(false);
-                }}
-                aria-label="Reset color"
-              />
-            </div>
-          )}
-          {lockedMessage && <div className="movie-locked">Premium feature</div>}
         </div>
         <div className="movie-move">
           <button type="button" className="movie-btn ghost" onClick={() => setMenuOpen((p) => !p)} aria-label="Move item">
