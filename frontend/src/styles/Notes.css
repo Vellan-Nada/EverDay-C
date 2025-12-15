@@ -243,9 +243,10 @@
 .color-popover {
   position: absolute;
   top: 110%;
-  right: 0;
-  left: auto;
-  z-index: 20;
+  left: 140%;
+  right: auto;
+  transform: translateX(-50%);
+  z-index: 30;
   background: var(--surface);
   border-radius: 0.8rem;
   border: 1px solid var(--app-border);
@@ -254,7 +255,7 @@
   flex-direction: column;
   gap: 0.5rem;
   min-width: 280px;
-  max-width: 320px;
+  max-width: min(320px, calc(100% - 16px));
   align-items: stretch;
 }
 

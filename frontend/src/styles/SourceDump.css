@@ -225,7 +225,7 @@
 .sd-color-popover {
   position: absolute;
   top: 110%;
-  right: 0;
+  right: -155%;
   z-index: 20;
   background: var(--surface);
   border-radius: 0.8rem;

@@ -153,6 +153,7 @@
   width: 100%;
   max-width: 100%;
   padding-bottom: 0.35rem; /* space for scrollbar */
+  box-sizing: border-box;
   box-shadow: var(--app-shadow);
 }
 
@@ -168,20 +169,9 @@
 
 .habit-table {
   width: 100%;
+  min-width: 100%;
   border-collapse: collapse;
-  min-width: 850px; /* fallback; JS will set a larger min-width inline */
-}
-
-.habit-table.mobile-table {
   table-layout: fixed;
-  min-width: 1100px;
-}
-
-/* Keep date scroller visible on smaller screens */
-@media (max-width: 900px) {
-  .habit-table.mobile-table {
-    min-width: 120%;
-  }
 }
 
 /* Subtle scrollbar styling for clarity */
@@ -210,25 +200,20 @@
 }
 .habit-table th:first-child,
 .habit-table td:first-child {
-  width: 6%;
-  text-align: center;
-  padding: 0.4rem;
-}
-.habit-table th.actions-col,
-.habit-table td.actions-col {
-  width: 70px;
+  width: 4%;
+  min-width: 40px;
   text-align: center;
   padding: 0.4rem;
 }
 .habit-table th.habit-col,
 .habit-table td.habit-col {
-  width: 22%;
-  /* text-align: center; */
+  width: 16%;
+  min-width: 160px;
   padding: 0.4rem;
 }
 .habit-table td.habit-col strong {
   display: inline-block;
-  max-width: 240px;
+  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -236,28 +221,44 @@
 }
 .habit-table th.icon-col,
 .habit-table td.icon-col {
-  width: 10%;
+  width: 5%;
+  min-width: 52px;
   text-align: center;
   padding: 0.4rem;
 }
 .habit-table th.streak-col,
 .habit-table td.streak-col {
-  width: 12%;
+  width: 7%;
+  min-width: 80px;
   text-align: center;
   padding: 0.4rem;
 }
 .habit-table th.actions-col,
 .habit-table td.actions-col {
-  width: 20%;
+  width: 9%;
+  min-width: 96px;
   text-align: center;
   padding: 0.4rem;
 }
 
 .habit-table th.sticky-dates,
 .habit-table td.sticky-dates {
-  width: 12%;
+  width: calc((100% - var(--fixed-pct, 44%)) / var(--date-count));
+  min-width: 80px;
   text-align: center;
   padding: 0.35rem 0.4rem;
+}
+
+@media (max-width: 1024px) {
+  .habit-table th.habit-col,
+  .habit-table td.habit-col {
+    width: 18%;
+    min-width: 140px;
+  }
+  .habit-table th,
+  .habit-table td {
+    padding: 0.4rem 0.6rem;
+  }
 }
 
 .habit-table tbody tr:hover {

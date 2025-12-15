@@ -1,4 +1,3 @@
-import { useLayoutEffect, useRef, useState } from 'react';
 import HabitRow from './HabitRow.jsx';
 
 const HabitTable = ({
@@ -11,32 +10,20 @@ const HabitTable = ({
   onEditHabit,
   onDeleteHabit,
 }) => {
-  const scrollerRef = useRef(null);
-  const [tableWidth, setTableWidth] = useState(1200);
-
-  // Measure available width (content area) and force slight overflow so horizontal scroll stays inside the table
-  useLayoutEffect(() => {
-    const measure = () => {
-      const scroller = scrollerRef.current;
-      if (!scroller) return;
-      const available = scroller.clientWidth || 0;
-      const perDate = 100;
-      const base = 340; // tighter width for non-date columns
-      const needed = base + dates.length * perDate;
-      // Keep table width close to what is actually needed; avoid stretching when few dates
-      const target = Math.max(needed, Math.min(available, 900));
-      setTableWidth(target);
-    };
-    measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, [dates.length]);
-
-  const tableStyle = { minWidth: `${tableWidth}px` };
+  const dateCount = dates.length || 1;
+  const baseMinWidth = 40 + 160 + 60 + 80 + 100; // px for fixed columns
+  const dateMinWidth = 72; // px per date column
+  const minWidthPx = baseMinWidth + dateCount * dateMinWidth;
+  const tableStyle = {
+    width: '100%',
+    minWidth: `${minWidthPx}px`,
+    '--date-count': dateCount,
+    '--fixed-pct': '40%',
+  };
 
   return (
     <div className="habit-table-wrapper">
-      <div className="habit-table-scroller" ref={scrollerRef}>
+      <div className="habit-table-scroller">
         <table className="habit-table mobile-table" style={tableStyle}>
           <thead>
             <tr>

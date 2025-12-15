@@ -145,8 +145,8 @@
 
 .reading-color-popover {
   position: absolute;
-  top: 110%;
-  right: 0;
+  top: 95%;
+  right: 28%;
   left: auto;
   z-index: 20;
   background: var(--surface);
