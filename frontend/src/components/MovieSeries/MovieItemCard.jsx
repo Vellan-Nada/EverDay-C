@@ -7,7 +7,20 @@ const STATUS_OPTIONS = [
   { id: 'watched', label: "Move to 'Watched'" },
 ];
 
-const COLOR_PRESETS = ['#fff7ed', '#eef2ff', '#ecfeff', '#f1f5f9', '#fef9c3', '#e0f2fe'];
+const COLOR_PRESETS = [
+  '#FFFFFF',
+  '#FDF4FF',
+  '#FEF3C7',
+  '#E0F2FE',
+  '#D1FAE5',
+  '#FFE4E6',
+  '#DCFCE7',
+  '#F1F5F9',
+  '#A19B9BFF',
+  '#E9D5FF',
+  '#E0E7FF',
+  '#F5F3FF',
+];
 
 const MovieItemCard = ({ item, isPremium, onEdit, onDelete, onMove, onChangeColor }) => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -44,8 +57,9 @@ const MovieItemCard = ({ item, isPremium, onEdit, onDelete, onMove, onChangeColo
                 e.stopPropagation();
                 handleColorClick();
               }}
+              style={{ background: isPremium ? item.card_color || '#fff' : '#e2e8f0' }}
             >
-              {isPremium ? '●' : '🔒'}
+              {!isPremium && '🔒'}
             </button>
             {colorOpen && isPremium && (
               <div className="movie-color-popover" onClick={(e) => e.stopPropagation()}>
@@ -61,19 +75,7 @@ const MovieItemCard = ({ item, isPremium, onEdit, onDelete, onMove, onChangeColo
                       }}
                     />
                   ))}
-                  <button
-                    type="button"
-                    style={{ background: '#fff', border: '1px solid var(--border)' }}
-                    onClick={() => {
-                      onChangeColor(item, null);
-                      setColorOpen(false);
-                    }}
-                    aria-label="Reset color"
-                  />
                 </div>
-                <button type="button" className="movie-btn ghost" onClick={() => setColorOpen(false)}>
-                  Cancel
-                </button>
               </div>
             )}
             {showUpsell && (

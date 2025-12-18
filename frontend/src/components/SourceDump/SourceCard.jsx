@@ -3,7 +3,20 @@ import { supabase } from '../../lib/supabaseClient.js';
 import PremiumColorUpsell from '../PremiumColorUpsell.jsx';
 import { SourceIcon, NoteIcon, CameraIcon } from '../FeatureIcons.jsx';
 
-const COLOR_PRESETS = ['#f8fafc', '#e0f2fe', '#fef9c3', '#dcfce7', '#ffe4e6'];
+const COLOR_PRESETS = [
+  '#FFFFFF',
+  '#FDF4FF',
+  '#FEF3C7',
+  '#E0F2FE',
+  '#D1FAE5',
+  '#FFE4E6',
+  '#DCFCE7',
+  '#F1F5F9',
+  '#A19B9BFF',
+  '#E9D5FF',
+  '#E0E7FF',
+  '#F5F3FF',
+];
 
 const SourceCard = ({ card, isPremium, onChangeColor, onClick }) => {
   const [colorMenu, setColorMenu] = useState(false);
@@ -135,16 +148,7 @@ const SourceCard = ({ card, isPremium, onChangeColor, onClick }) => {
                     onClick={() => handleColorPick(c)}
                   />
                 ))}
-                <button
-                  type="button"
-                  className="sd-color-default"
-                  onClick={() => handleColorPick(null)}
-                  aria-label="Reset color"
-                />
               </div>
-              <button type="button" className="sd-btn ghost" onClick={() => setColorMenu(false)}>
-                Cancel
-              </button>
             </div>
           )}
           {showUpsell && (

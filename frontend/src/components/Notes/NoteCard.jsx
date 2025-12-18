@@ -1,7 +1,20 @@
 import { useState } from 'react';
 import PremiumColorUpsell from '../PremiumColorUpsell.jsx';
 
-const PALETTE = ['#FFFFFF', '#FDF4FF', '#FEF3C7', '#E0F2FE', '#D1FAE5', '#FFE4E6', '#DCFCE7', '#F1F5F9'];
+const PALETTE = [
+  '#FFFFFF',
+  '#FDF4FF',
+  '#FEF3C7',
+  '#E0F2FE',
+  '#D1FAE5',
+  '#FFE4E6',
+  '#DCFCE7',
+  '#F1F5F9',
+  '#a19b9bff',
+  '#E9D5FF',
+  '#E0E7FF',
+  '#F5F3FF',
+];
 
 const NoteCard = ({
   note,

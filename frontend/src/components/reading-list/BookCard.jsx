@@ -7,7 +7,20 @@ const STATUS_OPTIONS = [
   { id: 'finished', label: 'Move to: Books have been read' },
 ];
 
-const COLOR_PRESETS = ['#fff7ed', '#eef2ff', '#ecfeff', '#f1f5f9', '#fef9c3', '#e0f2fe'];
+const COLOR_PRESETS = [
+  '#FFFFFF',
+  '#FDF4FF',
+  '#FEF3C7',
+  '#E0F2FE',
+  '#D1FAE5',
+  '#FFE4E6',
+  '#DCFCE7',
+  '#F1F5F9',
+  '#A19B9BFF',
+  '#E9D5FF',
+  '#E0E7FF',
+  '#F5F3FF',
+];
 
 const BookCard = ({ item, isPremium, onEdit, onDelete, onMove, onChangeColor }) => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -39,8 +52,9 @@ const BookCard = ({ item, isPremium, onEdit, onDelete, onMove, onChangeColor }) 
             className={`reading-color ${isPremium ? '' : 'locked'}`}
             aria-label="Change color"
             onClick={handleColorClick}
+            style={{ background: isPremium ? item.background_color || '#fff' : '#e2e8f0' }}
           >
-            {isPremium ? '●' : '🔒'}
+            {!isPremium && '🔒'}
           </button>
           <button type="button" className="reading-btn ghost" onClick={() => onEdit(item)}>
             Edit
@@ -63,19 +77,7 @@ const BookCard = ({ item, isPremium, onEdit, onDelete, onMove, onChangeColor }) 
                     aria-label={`Set color ${c}`}
                   />
                 ))}
-                <button
-                  type="button"
-                  style={{ background: '#fff', border: '1px solid var(--border)' }}
-                  onClick={() => {
-                    onChangeColor?.(item, null);
-                    setColorOpen(false);
-                  }}
-                  aria-label="Reset color"
-                />
               </div>
-              <button type="button" className="reading-btn ghost full" onClick={() => setColorOpen(false)}>
-                Cancel
-              </button>
             </div>
           )}
           {showUpsell && (

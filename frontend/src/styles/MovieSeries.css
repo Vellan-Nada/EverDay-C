@@ -141,6 +141,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
 .movie-color.locked {
@@ -152,17 +153,18 @@
   position: absolute;
   top: 110%;
   left: 0;
+  right: auto;
+  z-index: 20;
   background: var(--surface);
-  border: 1px solid var(--app-border);
   border-radius: 0.8rem;
+  border: 1px solid var(--app-border);
   padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  z-index: 20;
-  box-shadow: var(--app-shadow);
-  min-width: 280px;
+  gap: 0.35rem;
+  min-width: 180px;
   max-width: 320px;
+  box-shadow: var(--app-shadow);
   align-items: stretch;
 }
 

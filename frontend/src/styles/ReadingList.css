@@ -145,9 +145,9 @@
 
 .reading-color-popover {
   position: absolute;
-  top: 95%;
-  right: 28%;
-  left: auto;
+  top: 110%;
+  left: 0;
+  right: auto;
   z-index: 20;
   background: var(--surface);
   border-radius: 0.8rem;
@@ -155,15 +155,16 @@
   padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  min-width: 280px;
+  gap: 0.35rem;
+  min-width: 180px;
   max-width: 320px;
+  box-shadow: var(--app-shadow);
   align-items: stretch;
 }
 
 .reading-color-menu {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.35rem;
 }
 
@@ -325,30 +326,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
 .reading-color.locked {
   cursor: not-allowed;
   background: #e2e8f0;
-}
-
-.reading-color-menu {
-  position: absolute;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  padding: 0.5rem;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.35rem;
-  z-index: 10;
-}
-
-.reading-color-menu button {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid rgba(15, 23, 42, 0.15);
 }
 
 .reading-modal-actions {

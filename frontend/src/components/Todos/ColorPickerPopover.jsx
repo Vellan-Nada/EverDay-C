@@ -1,6 +1,19 @@
 import PremiumColorUpsell from '../PremiumColorUpsell.jsx';
 
-const PALETTE = ['#fef3c7', '#e0f2fe', '#f1f5f9', '#e9d5ff', '#fef9c3', '#cffafe', '#dcfce7'];
+const PALETTE = [
+  '#FFFFFF',
+  '#FDF4FF',
+  '#FEF3C7',
+  '#E0F2FE',
+  '#D1FAE5',
+  '#FFE4E6',
+  '#DCFCE7',
+  '#F1F5F9',
+  '#A19B9BFF',
+  '#E9D5FF',
+  '#E0E7FF',
+  '#F5F3FF',
+];
 
 const ColorPickerPopover = ({ isPremium, onSelect, onClose, disabledReason, saving }) => {
   if (!isPremium) {
@@ -27,9 +40,6 @@ const ColorPickerPopover = ({ isPremium, onSelect, onClose, disabledReason, savi
           />
         ))}
       </div>
-      <button type="button" className="todo-btn ghost" onClick={onClose}>
-        Cancel
-      </button>
     </div>
   );
 };

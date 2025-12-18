@@ -193,17 +193,18 @@
 .todo-color-popover {
   position: absolute;
   top: 110%;
-  right: 0;
-  z-index: 15;
+  left: 0;
+  right: auto;
+  z-index: 20;
   background: var(--surface);
   border-radius: 0.8rem;
   border: 1px solid var(--app-border);
   padding: 0.75rem;
-  min-width: 280px;
+  min-width: 180px;
   max-width: 320px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem;
   box-shadow: var(--app-shadow);
   align-items: stretch;
 }
@@ -216,9 +217,7 @@
 }
 
 .todo-color-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.35rem;
+  display: contents;
 }
 
 .todo-color-grid button {
@@ -248,19 +247,6 @@
   justify-content: center;
   text-align: center;
   line-height: 1.2;
-}
-
-.todo-color-popover .todo-btn.ghost {
-  width: 100%;
-  border-radius: 999px;
-  padding: 0.55rem 1rem;
-  background: var(--card-muted);
-  border: 1px solid var(--app-border);
-  color: #0f172a;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .todo-empty,
