@@ -198,6 +198,8 @@ const DashboardLayout = () => {
           onClose={() => setSidebarOpen(false)}
           onUpgradeClick={handleUpgradeClick}
           onManageSubscription={handleManageSubscription}
+          onDonate={handleDonate}
+          onFeedback={handleFeedback}
         />
         <main className={layoutStyles.contentArea}>
           <div className={layoutStyles.topRail}>

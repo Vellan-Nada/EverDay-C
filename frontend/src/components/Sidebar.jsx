@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient.js';
 import { useAuth } from '../hooks/useAuth.js';
 import styles from '../styles/Sidebar.module.css';
@@ -97,6 +97,41 @@ const FilmIcon = ({ className }) => (
   </IconBase>
 );
 
+const CrownIcon = ({ className }) => (
+  <IconBase className={className}>
+    <path d="m2 7 5 5 5-10 5 10 5-5v11H2Z" />
+    <path d="M2 18h20" />
+  </IconBase>
+);
+
+const HeartIcon = ({ className }) => (
+  <IconBase className={className}>
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z" />
+  </IconBase>
+);
+
+const MessageIcon = ({ className }) => (
+  <IconBase className={className}>
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" />
+  </IconBase>
+);
+
+const LoginIcon = ({ className }) => (
+  <IconBase className={className}>
+    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+    <polyline points="10 17 15 12 10 7" />
+    <line x1="15" x2="3" y1="12" y2="12" />
+  </IconBase>
+);
+
+const LogOutIcon = ({ className }) => (
+  <IconBase className={className}>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" x2="9" y1="12" y2="12" />
+  </IconBase>
+);
+
 const defaultNavItems = [
   { label: 'Dashboard', path: '/' },
   { label: 'Habit Tracker', path: '/habits' },
@@ -112,10 +147,13 @@ const defaultNavItems = [
 const Sidebar = ({
   onUpgradeClick = () => {},
   onManageSubscription = () => {},
+  onDonate = () => {},
+  onFeedback = () => {},
   isMobileOpen = false,
   onClose = () => {},
 }) => {
-  const { planTier, user } = useAuth();
+  const { planTier, user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [navItems, setNavItems] = useState(defaultNavItems);
   const draggingPathRef = useRef(null);
   const dragImageRef = useRef(null);
@@ -238,6 +276,69 @@ const Sidebar = ({
             <h1>EverDay</h1>
           </div>
         </div>
+      </div>
+
+      <div className={styles.mobileActions}>
+        {(!user || planTier === 'free') && (
+          <button
+            type="button"
+            className={styles.mobileActionButton}
+            onClick={() => {
+              onClose();
+              onUpgradeClick();
+            }}
+            aria-label="Upgrade"
+          >
+            <CrownIcon className={styles.mobileActionIcon} />
+          </button>
+        )}
+        <button
+          type="button"
+          className={styles.mobileActionButton}
+          onClick={() => {
+            onClose();
+            onDonate();
+          }}
+          aria-label="Donate"
+        >
+          <HeartIcon className={styles.mobileActionIcon} />
+        </button>
+        <button
+          type="button"
+          className={styles.mobileActionButton}
+          onClick={() => {
+            onClose();
+            onFeedback();
+          }}
+          aria-label="Feedback"
+        >
+          <MessageIcon className={styles.mobileActionIcon} />
+        </button>
+        {user ? (
+          <button
+            type="button"
+            className={styles.mobileActionButton}
+            onClick={() => {
+              onClose();
+              signOut();
+            }}
+            aria-label="Log out"
+          >
+            <LogOutIcon className={styles.mobileActionIcon} />
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={styles.mobileActionButton}
+            onClick={() => {
+              onClose();
+              navigate('/login');
+            }}
+            aria-label="Log in"
+          >
+            <LoginIcon className={styles.mobileActionIcon} />
+          </button>
+        )}
       </div>
 
       <div className={styles.sidebarBody}>

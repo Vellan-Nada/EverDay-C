@@ -126,6 +126,20 @@
   .menuButton {
     display: inline-flex;
   }
+  .topActions {
+    display: none;
+  }
+  .mobileToggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .mobileToggle h2 {
+    order: 1;
+  }
+  .menuButton {
+    order: 2;
+    margin-left: auto;
+  }
 }
 
 @media (max-width: 640px) {

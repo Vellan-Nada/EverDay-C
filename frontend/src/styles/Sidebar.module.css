@@ -23,7 +23,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.1rem;
 }
 
 .brandLink {
@@ -65,7 +65,7 @@
 
 .sidebarHeader {
   padding: 0.75rem 0.1rem 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.1rem;
 }
 
 .sidebarBody {
@@ -165,6 +165,31 @@
   font-weight: 600;
 }
 
+.mobileActions {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0 0.2rem 0.2rem;
+}
+
+.mobileActionButton {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #ffffff;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #0b1224;
+}
+
+.mobileActionIcon {
+  width: 18px;
+  height: 18px;
+}
+
 .closeButton {
   position: absolute;
   top: 0.75rem;
@@ -197,8 +222,7 @@
   }
 
   .sidebarHeader {
-    padding: 2rem 0.1rem 0.01rem;
-    margin-bottom: 0.5rem;
+    padding: 1rem 0.1rem 0.01rem;
   }
 
   .sidebarOpen {
@@ -214,6 +238,13 @@
 
   .sidebarBody {
     overflow-y: auto;
-    padding-bottom: 1.5rem;
+    padding-bottom: 1.0rem;
+  }
+
+  .mobileActions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    margin-bottom: 0.6rem;
   }
 }

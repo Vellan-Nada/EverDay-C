@@ -303,4 +303,14 @@
   .journal-day-row {
     display: none;
   }
+  .journal-modal {
+    align-items: flex-start;
+    padding: 1rem 0.85rem;
+  }
+  .journal-modal-content {
+    width: min(520px, 92vw);
+  }
+  .journal-row {
+    grid-template-columns: 1fr;
+  }
 }
