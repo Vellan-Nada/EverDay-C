@@ -45,13 +45,13 @@ const AuthPage = ({ mode = 'login' }) => {
     }
   };
 
-  const headline = mode === 'login' ? 'Welcome back to EverDay' : 'Create your EverDay account';
+  const headline = mode === 'login' ? 'Welcome back to Zenit' : 'Create your Zenit account';
 
   return (
     <section className={styles.authWrapper}>
       <div className={styles.card}>
         <div>
-          <h1>{headline}</h1>
+          <h1 className={styles.headlineCentered}>{headline}</h1>
           <p className={styles.mutedText}>Access your universal productivity space.</p>
         </div>
         <button

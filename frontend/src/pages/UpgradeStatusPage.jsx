@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth.js';
 const STATUS_COPY = {
   success: {
     title: 'Payment confirmed 🎉',
-    description: 'Your EverDay Plus plan is now active. You can return to the dashboard.',
+    description: 'Your Zenit Plus plan is now active. You can return to the dashboard.',
     action: 'Return to dashboard',
   },
   cancel: {
@@ -15,7 +15,7 @@ const STATUS_COPY = {
   },
   donation: {
     title: 'Donation received 🙏',
-    description: 'Thank you for supporting EverDay!',
+    description: 'Thank you for supporting Zenit!',
     action: 'Return to Dashboard',
   },
 };

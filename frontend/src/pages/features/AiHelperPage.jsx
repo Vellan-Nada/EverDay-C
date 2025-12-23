@@ -7,7 +7,7 @@ import LoadingSpinner from '../../components/LoadingSpinner.jsx';
 const starterMessages = [
   {
     role: 'assistant',
-    content: 'Hey! I am your EverDay AI helper. Ask about focus, planning, learning, or anything productivity related.',
+    content: 'Hey! I am your Zenit AI helper. Ask about focus, planning, learning, or anything productivity related.',
     id: 'welcome',
   },
 ];
@@ -35,7 +35,7 @@ const AiHelperPage = () => {
   const sendPrompt = async (prompt) => {
     if (!prompt.trim()) return;
     if (!canUseAi) {
-      setError('EverDay Pro is required to use the AI helper.');
+      setError('Zenit Pro is required to use the AI helper.');
       return;
     }
     const userMessage = { role: 'user', content: prompt.trim(), id: `user-${Date.now()}` };
@@ -76,7 +76,7 @@ const AiHelperPage = () => {
       )}
       {!isPro && (
         <div className="info-toast" style={{ background: 'rgba(249, 115, 22, 0.15)', color: '#b45309' }}>
-          EverDay Pro unlocks the AI helper. Upgrade to Pro to access this space.
+          Zenit Pro unlocks the AI helper. Upgrade to Pro to access this space.
         </div>
       )}
       <div className={styles.messageList}>
@@ -95,7 +95,7 @@ const AiHelperPage = () => {
         <textarea
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          placeholder="Ask EverDay AI anything about productivity, habits, or learning..."
+          placeholder="Ask Zenit AI anything about productivity, habits, or learning..."
           disabled={!canUseAi}
         />
         <div className={styles.composerActions}>

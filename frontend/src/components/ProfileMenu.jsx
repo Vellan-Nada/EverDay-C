@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import styles from '../styles/ProfileMenu.module.css';
+import modalStyles from '../styles/Modal.module.css';
 
 const LogOutIcon = ({ size = 18, className }) => (
   <svg
@@ -29,10 +30,13 @@ const planLabels = {
 };
 
 const ProfileMenu = ({ onUpgradeClick = () => {}, onManageSubscription = () => {} }) => {
-  const { user, profile, planTier, signOut } = useAuth();
+  const { user, profile, planTier, signOut, deleteAccount } = useAuth();
   const navigate = useNavigate();
   const containerRef = useRef(null);
   const [open, setOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
   useEffect(() => {
     const handler = (event) => {
@@ -48,7 +52,7 @@ const ProfileMenu = ({ onUpgradeClick = () => {}, onManageSubscription = () => {
   if (!user) {
     return (
       <div className={styles.guestBox}>
-        <p>Sign in to personalize EverDay</p>
+        <p>Sign in to personalize Zenit</p>
         <button type="button" onClick={() => navigate('/login')}>
           Sign in
         </button>
@@ -78,6 +82,21 @@ const ProfileMenu = ({ onUpgradeClick = () => {}, onManageSubscription = () => {
   const handleUpgrade = () => {
     setOpen(false);
     onUpgradeClick();
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleteLoading(true);
+    setDeleteError(null);
+    try {
+      await deleteAccount();
+      setDeleteOpen(false);
+      setOpen(false);
+      navigate('/login');
+    } catch (err) {
+      setDeleteError(err.message || 'Unable to delete account.');
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   return (
@@ -120,6 +139,16 @@ const ProfileMenu = ({ onUpgradeClick = () => {}, onManageSubscription = () => {
                 Subscription settings
               </button>
             )}
+            <button
+              type="button"
+              className={styles.deleteButton}
+              onClick={() => {
+                setOpen(false);
+                setDeleteOpen(true);
+              }}
+            >
+              Delete account
+            </button>
           </div>
           <button
             type="button"
@@ -132,6 +161,42 @@ const ProfileMenu = ({ onUpgradeClick = () => {}, onManageSubscription = () => {
             <LogOutIcon size={18} aria-hidden="true" />
             Log out
           </button>
+        </div>
+      )}
+      {deleteOpen && (
+        <div
+          className={modalStyles.backdrop}
+          role="dialog"
+          aria-modal="true"
+          onClick={() => {
+            if (!deleteLoading) setDeleteOpen(false);
+          }}
+        >
+          <div className={modalStyles.modal} onClick={(event) => event.stopPropagation()}>
+            <h2>Delete account?</h2>
+            <p className={styles.deleteWarning}>
+              This permanently deletes your account and all associated data. This action cannot be undone.
+            </p>
+            {deleteError && <p className={styles.deleteError}>{deleteError}</p>}
+            <div className={modalStyles.actions}>
+              <button
+                type="button"
+                className={modalStyles.ghostButton}
+                onClick={() => setDeleteOpen(false)}
+                disabled={deleteLoading}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.deleteConfirmButton}
+                onClick={handleDeleteAccount}
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? 'Deleting...' : 'Delete account'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

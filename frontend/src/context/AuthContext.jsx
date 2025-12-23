@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabaseClient.js';
-import { getProfile as fetchProfileApi } from '../api/profileApi.js';
+import { getProfile as fetchProfileApi, deleteAccount as deleteAccountApi } from '../api/profileApi.js';
 
 const AuthContext = createContext(undefined);
 
@@ -133,6 +133,17 @@ export const AuthProvider = ({ children }) => {
     return data;
   }, []);
 
+  const deleteAccount = useCallback(async () => {
+    if (!token) {
+      throw new Error('Not authenticated');
+    }
+    await deleteAccountApi(token);
+    await supabase.auth.signOut();
+    setSession(null);
+    setUser(null);
+    setProfile(null);
+  }, [token]);
+
   const plan = profile?.plan || 'free';
   const planExpiresAt = profile?.plan_expires_at || null;
   const planTier = ['free', 'plus', 'pro'].includes(plan) ? plan : 'free';
@@ -161,6 +172,7 @@ export const AuthProvider = ({ children }) => {
       signInWithProvider,
       requestPasswordReset,
       updatePassword,
+      deleteAccount,
       refreshProfile: loadProfile,
     }),
     [
@@ -183,6 +195,7 @@ export const AuthProvider = ({ children }) => {
       signInWithProvider,
       requestPasswordReset,
       updatePassword,
+      deleteAccount,
       loadProfile,
     ]
   );

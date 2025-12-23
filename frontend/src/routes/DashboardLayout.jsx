@@ -283,7 +283,7 @@ const DashboardLayout = () => {
           boxShadow: 'none',
         }}
       >
-        © {new Date().getFullYear()} EverDay. All rights reserved.
+        © {new Date().getFullYear()} Zenit. All rights reserved.
       </footer>
     </>
   );

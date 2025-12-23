@@ -270,10 +270,10 @@ const Sidebar = ({
       <div className={styles.sidebarHeader}>
         <div className={styles.brandRow}>
           <NavLink to="/" className={styles.brandLink} onClick={onClose} aria-label="Go to dashboard">
-            <img src="/logo2.png" alt="EverDay logo" className={styles.logoIcon} />
+            <img src="/logo2.png" alt="Zenit logo" className={styles.logoIcon} />
           </NavLink>
           <div className={styles.brand}>
-            <h1>EverDay</h1>
+            <h1>Zenit</h1>
           </div>
         </div>
       </div>

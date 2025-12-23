@@ -141,9 +141,9 @@ const WelcomePage = () => {
     <article className={styles.page}>
       <header className={styles.hero}>
         {user && <span className={styles.heroBadge}>Welcome back!</span>}
-        <h1>Welcome to EverDay</h1>
+        <h1>Welcome to Zenit</h1>
         <p>
-          EverDay unifies your habits, notes, todos, focus cycles, inspiration and thoughts into one calm workspace.
+          Zenit unifies your habits, notes, todos, focus cycles, inspiration and thoughts into one calm workspace.
         </p>
       </header>
 

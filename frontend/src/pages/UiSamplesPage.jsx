@@ -35,7 +35,7 @@ const UiSamplesPage = () => {
           <h1>Modern UI samples</h1>
           <p className={styles.subtitle}>
             Three alternative layouts that stay minimal, tactile, and free of gradients. Use them for hero states,
-            marketing snapshots, or upcoming EverDay surfaces.
+            marketing snapshots, or upcoming Zenit surfaces.
           </p>
         </div>
         <span className={styles.tag}>No gradients · Neutral palette</span>

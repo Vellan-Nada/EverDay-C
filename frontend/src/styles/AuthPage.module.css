@@ -26,6 +26,10 @@
   letter-spacing: -0.02em;
 }
 
+.headlineCentered {
+  text-align: center;
+}
+
 .card form {
   display: flex;
   flex-direction: column;

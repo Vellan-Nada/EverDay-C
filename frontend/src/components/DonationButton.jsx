@@ -42,7 +42,7 @@ const DonationButton = ({ onDonate }) => {
           role="dialog"
           aria-label="Donation prompt"
         >
-          <p>Give a one-time $5 donation to support EverDay.</p>
+          <p>Give a one-time $5 donation to support Zenit.</p>
         </div>
       )}
     </div>

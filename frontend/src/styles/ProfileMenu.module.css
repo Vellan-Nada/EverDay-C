@@ -115,12 +115,49 @@
   transform: translateX(3px);
 }
 
-.logoutButton {
+.deleteButton {
   border: 1px solid rgba(248, 113, 113, 0.6);
+  color: #b91c1c;
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.deleteButton:hover {
+  border-color: rgba(248, 113, 113, 0.85);
+  transform: translateX(0);
+}
+
+.deleteWarning {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.deleteError {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
+.deleteConfirmButton {
+  border: 1px solid rgba(248, 113, 113, 0.75);
+  border-radius: 0.85rem;
+  background: rgba(248, 113, 113, 0.18);
+  color: #b91c1c;
+  padding: 0.65rem 1.25rem;
+  font-weight: 600;
+}
+
+.deleteConfirmButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.logoutButton {
+  border: 1px solid rgba(15, 15, 15, 0.6);
   border-radius: 0.9rem;
   padding: 0.55rem 0.8rem;
-  background: rgba(248, 113, 113, 0.15);
-  color: #b91c1c;
+  background: rgba(197, 191, 191, 0.15);
+  color: #141414;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
