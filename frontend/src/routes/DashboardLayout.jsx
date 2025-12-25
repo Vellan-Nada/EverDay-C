@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar.jsx';
 import DonationButton from '../components/DonationButton.jsx';
 import FeedbackButton from '../components/FeedbackButton.jsx';
@@ -271,19 +271,18 @@ const DashboardLayout = () => {
         </main>
       </div>
       <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
-      <footer
-        style={{
-          textAlign: 'center',
-          padding: '1rem 0',
-          margin: 0,
-          color: 'rgba(24, 24, 24, 1)',
-          fontSize: '0.95rem',
-          background: 'transparent',
-          border: 'none',
-          boxShadow: 'none',
-        }}
-      >
-        © {new Date().getFullYear()} Zenit. All rights reserved.
+      <footer className={layoutStyles.footer}>
+        <span className={layoutStyles.footerCopy}>
+          © {new Date().getFullYear()} Zenit. All rights reserved.
+        </span>
+        <div className={layoutStyles.footerLinks}>
+          <Link to="/privacy-policy" className={layoutStyles.footerLink}>
+            Privacy Policy
+          </Link>
+          <Link to="/terms-of-service" className={layoutStyles.footerLink}>
+            Terms of Service
+          </Link>
+        </div>
       </footer>
     </>
   );

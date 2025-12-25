@@ -13,6 +13,8 @@ import AuthPage from './pages/AuthPage.jsx';
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
 import UpgradePage from './pages/UpgradePage.jsx';
 import UpgradeStatusPage from './pages/UpgradeStatusPage.jsx';
+import PrivacyPolicy from './pages/PrivacyPolicy.jsx';
+import TermsOfService from './pages/TermsOfService.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { GuestProvider } from './context/GuestContext.jsx';
 
@@ -39,6 +41,8 @@ const App = () => {
               <Route path="upgrade/success" element={<UpgradeStatusPage status="success" />} />
               <Route path="upgrade/donation" element={<UpgradeStatusPage status="donation" />} />
               <Route path="upgrade/cancel" element={<UpgradeStatusPage status="cancel" />} />
+              <Route path="privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="terms-of-service" element={<TermsOfService />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

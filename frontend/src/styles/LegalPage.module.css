@@ -1,0 +1,39 @@
+.legalPage {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 1.5rem 0 3rem;
+}
+
+.legalCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1.2rem;
+  padding: 2rem;
+  box-shadow: var(--app-shadow);
+}
+
+.legalCardRightPad {
+  padding-right: 2.75rem;
+}
+
+.legalCard h1 {
+  margin: 0 0 1.25rem;
+  font-size: 1.75rem;
+}
+
+.legalText {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: inherit;
+  line-height: 1.6;
+  color: #2f2b27;
+}
+
+@media (max-width: 640px) {
+  .legalPage {
+    padding-bottom: 2rem;
+  }
+  .legalCard {
+    padding: 1.5rem;
+  }
+}
